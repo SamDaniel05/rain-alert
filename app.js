@@ -1040,9 +1040,24 @@ document.addEventListener('DOMContentLoaded', () => {
       const cardsHtml = await Promise.all(TN_HUBS.map(async (hub) => {
         try {
           const res = await WeatherEngine.getPrecipitationForPoint(hub.lat, hub.lon);
-          const hasRain = res.precipitationSum > 0.05 || res.precipitationProbability > 25 || res.isRain;
-          const badgeClass = hasRain ? 'radar-condition-badge rain' : 'radar-condition-badge clear';
-          const badgeText = hasRain ? '🌧️ Rain Alert' : '☀️ Clear';
+          
+          let badgeClass = 'radar-condition-badge clear';
+          let badgeText = '☀️ Clear';
+
+          if (res.isRain || res.precipitationSum > 0.05) {
+            badgeClass = 'radar-condition-badge rain';
+            badgeText = `🌧️ Rain (${res.precipitationSum}mm)`;
+          } else if (res.precipitationProbability >= 65) {
+            badgeClass = 'radar-condition-badge warning';
+            badgeText = '⚠️ High Rain Risk';
+          } else if (res.precipitationProbability >= 30) {
+            badgeClass = 'radar-condition-badge overcast';
+            badgeText = '☁️ Overcast / Showers';
+          }
+
+          const precipLabel = res.precipitationSum > 0 
+            ? `${res.precipitationSum}mm rain` 
+            : `Dry (0mm)`;
 
           return `
             <div class="radar-card">
@@ -1051,7 +1066,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="${badgeClass}">${badgeText}</span>
               </div>
               <div class="radar-temp-stat">${res.precipitationProbability}%</div>
-              <div class="radar-sub-stat">Rain Prob &bull; ${res.precipitationSum}mm &bull; ${res.temp}°C</div>
+              <div class="radar-sub-stat">Rain Prob &bull; ${precipLabel} &bull; ${res.temp}°C</div>
             </div>
           `;
         } catch {

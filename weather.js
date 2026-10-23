@@ -85,6 +85,7 @@ const WeatherEngine = {
     const wInfo = this.interpretWmoCode(cur.weather_code, cur.precipitation, cur.rain);
     return {
       current: {
+        time: cur.time,
         temp: Math.round(cur.temperature_2m),
         feelsLike: Math.round(cur.apparent_temperature),
         humidity: cur.relative_humidity_2m,
@@ -140,10 +141,29 @@ const WeatherEngine = {
       const data = await this.getPointForecast(lat, lon);
       const cur = data.current || {};
       const hourly = data.hourly || {};
-      const prob = (hourly.precipitation_probability && hourly.precipitation_probability.length > 0)
-        ? hourly.precipitation_probability[0]
-        : (cur.isRain ? 75 : 10);
+      
+      // Calculate probability for the exact current hour in Asia/Kolkata
+      let prob = 10;
+      if (hourly.time && hourly.precipitation_probability && hourly.precipitation_probability.length > 0) {
+        // Current hour string e.g. "2026-10-23T18:00"
+        const curTimeStr = cur.time || new Date().toISOString();
+        const curHourPrefix = curTimeStr.slice(0, 13);
+        let idx = hourly.time.findIndex(t => t.startsWith(curHourPrefix));
+        if (idx === -1) {
+          // Fallback: match by current Kolkata hour
+          const kolkataHourStr = new Date().toLocaleString('sv', { timeZone: 'Asia/Kolkata' }).slice(0, 13).replace(' ', 'T');
+          idx = hourly.time.findIndex(t => t.startsWith(kolkataHourStr));
+        }
+
+        if (idx !== -1 && hourly.precipitation_probability[idx] !== undefined) {
+          prob = hourly.precipitation_probability[idx];
+        } else {
+          prob = hourly.precipitation_probability[0];
+        }
+      }
+
       const rainSum = (cur.rain !== undefined ? cur.rain : cur.precip) || 0;
+      const isRainingNow = cur.isRain || rainSum > 0.05 || (cur.condition && cur.condition.toLowerCase().includes('rain'));
 
       return {
         precipitationProbability: prob,
@@ -151,7 +171,8 @@ const WeatherEngine = {
         temp: cur.temp || 30,
         condition: cur.condition || 'Fair',
         icon: cur.icon || '⛅',
-        isRain: cur.isRain || rainSum > 0.05 || prob >= 30
+        isRain: isRainingNow,
+        cloudCover: cur.cloudCover || 0
       };
     } catch (e) {
       console.warn('getPrecipitationForPoint fallback:', e);
