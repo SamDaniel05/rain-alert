@@ -132,5 +132,46 @@ const WeatherEngine = {
         temperature_2m: [30]
       }
     };
+  },
+
+  // Helper method for quick rain & precipitation checks
+  async getPrecipitationForPoint(lat, lon) {
+    try {
+      const data = await this.getPointForecast(lat, lon);
+      const cur = data.current || {};
+      const hourly = data.hourly || {};
+      const prob = (hourly.precipitation_probability && hourly.precipitation_probability.length > 0)
+        ? hourly.precipitation_probability[0]
+        : (cur.isRain ? 75 : 10);
+      const rainSum = (cur.rain !== undefined ? cur.rain : cur.precip) || 0;
+
+      return {
+        precipitationProbability: prob,
+        precipitationSum: rainSum,
+        temp: cur.temp || 30,
+        condition: cur.condition || 'Fair',
+        icon: cur.icon || '⛅',
+        isRain: cur.isRain || rainSum > 0.05 || prob >= 30
+      };
+    } catch (e) {
+      console.warn('getPrecipitationForPoint fallback:', e);
+      return {
+        precipitationProbability: 15,
+        precipitationSum: 0,
+        temp: 30,
+        condition: 'Clear Sky',
+        icon: '☀️',
+        isRain: false
+      };
+    }
   }
 };
+
+// Global aliases for maximum interoperability
+if (typeof window !== 'undefined') {
+  window.WeatherEngine = WeatherEngine;
+  window.WeatherService = WeatherEngine;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = WeatherEngine;
+}

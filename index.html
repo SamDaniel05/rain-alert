@@ -254,15 +254,21 @@
           </div>
         </div>
 
-        <!-- Start & Destination Inputs -->
+        <!-- Start & Destination Inputs with Autocomplete -->
         <div class="form-group">
           <label for="startLocationInput">Where are you starting from?</label>
-          <input type="text" class="text-input" id="startLocationInput" placeholder="e.g. Adyar or Wimco Nagar" value="">
+          <div class="autocomplete-wrapper">
+            <input type="text" class="text-input" id="startLocationInput" placeholder="e.g. Ennore, Wimco Nagar, Adyar..." autocomplete="off" value="">
+            <div class="autocomplete-dropdown" id="startLocationDropdown" style="display: none;"></div>
+          </div>
         </div>
 
         <div class="form-group">
           <label for="endLocationInput">Where will you be going today?</label>
-          <input type="text" class="text-input" id="endLocationInput" placeholder="e.g. Kelambakkam" value="">
+          <div class="autocomplete-wrapper">
+            <input type="text" class="text-input" id="endLocationInput" placeholder="e.g. Royapuram, Chemmencherry, Manali..." autocomplete="off" value="">
+            <div class="autocomplete-dropdown" id="endLocationDropdown" style="display: none;"></div>
+          </div>
         </div>
 
         <!-- Calculate & Detect Areas Button -->
@@ -282,9 +288,12 @@
             <span class="placeholder-text">Click "Find Fastest Route" above to see all areas automatically.</span>
           </div>
 
-          <!-- Add Custom Detour Input -->
+          <!-- Add Custom Detour Input with Autocomplete -->
           <div class="add-detour-row">
-            <input type="text" class="detour-input" id="customDetourInput" placeholder="Add extra detour (e.g. Pallikaranai, Kovalam)" aria-label="Add custom detour area">
+            <div class="autocomplete-wrapper" style="flex: 1;">
+              <input type="text" class="detour-input" id="customDetourInput" placeholder="Add extra detour (e.g. Pallikaranai, Kovalam...)" aria-label="Add custom detour area" autocomplete="off">
+              <div class="autocomplete-dropdown" id="detourLocationDropdown" style="display: none;"></div>
+            </div>
             <button type="button" class="btn-add-detour" id="btnAddDetour">+ Add</button>
           </div>
         </div>

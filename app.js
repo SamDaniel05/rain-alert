@@ -58,11 +58,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const startTimeInput = document.getElementById('startTimeInput');
   const endTimeInput = document.getElementById('endTimeInput');
   const startLocationInput = document.getElementById('startLocationInput');
+  const startLocationDropdown = document.getElementById('startLocationDropdown');
   const endLocationInput = document.getElementById('endLocationInput');
+  const endLocationDropdown = document.getElementById('endLocationDropdown');
   const btnAnalyzeRoute = document.getElementById('btnAnalyzeRoute');
   const areaChipsList = document.getElementById('areaChipsList');
   const areaCountText = document.getElementById('areaCountText');
   const customDetourInput = document.getElementById('customDetourInput');
+  const detourLocationDropdown = document.getElementById('detourLocationDropdown');
   const btnAddDetour = document.getElementById('btnAddDetour');
 
   // Settings Modal Elements
@@ -658,6 +661,138 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // ==========================================================================
+  // Micro-Locality Autocomplete & Live Recommendations
+  // ==========================================================================
+  function setupAutocomplete(inputEl, dropdownEl, onSelectCallback) {
+    if (!inputEl || !dropdownEl) return;
+    let debounceTimer = null;
+    let focusedIndex = -1;
+
+    function renderSuggestions(suggestions, query) {
+      if (!suggestions || suggestions.length === 0) {
+        dropdownEl.innerHTML = `<div class="ac-no-results">No pre-mapped area. Press Enter or tab out to use exact typed name.</div>`;
+        dropdownEl.style.display = 'flex';
+        return;
+      }
+
+      dropdownEl.innerHTML = '';
+      focusedIndex = -1;
+
+      suggestions.forEach((item, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'autocomplete-item';
+        btn.setAttribute('data-idx', idx);
+
+        // Highlight matched characters in display name
+        const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${safeQuery})`, 'gi');
+        const highlightedName = item.display.replace(regex, '<mark>$1</mark>');
+
+        btn.innerHTML = `
+          <div class="ac-icon">📍</div>
+          <div class="ac-text-col">
+            <span class="ac-name">${highlightedName}</span>
+            <span class="ac-region">${item.region || 'Tamil Nadu'}</span>
+          </div>
+        `;
+
+        btn.addEventListener('mousedown', (e) => {
+          e.preventDefault(); // Prevents input blur before click fires
+          selectItem(item);
+        });
+
+        dropdownEl.appendChild(btn);
+      });
+
+      dropdownEl.style.display = 'flex';
+    }
+
+    function selectItem(item) {
+      inputEl.value = item.name;
+      inputEl.dataset.lat = item.lat;
+      inputEl.dataset.lon = item.lon;
+      dropdownEl.style.display = 'none';
+      if (typeof onSelectCallback === 'function') {
+        onSelectCallback(item);
+      }
+    }
+
+    inputEl.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      const query = inputEl.value.trim();
+      if (!query) {
+        dropdownEl.style.display = 'none';
+        return;
+      }
+
+      debounceTimer = setTimeout(() => {
+        const suggestions = RoutingEngine.searchSuggestions(query, 6);
+        renderSuggestions(suggestions, query);
+      }, 70);
+    });
+
+    inputEl.addEventListener('focus', () => {
+      const query = inputEl.value.trim();
+      if (query) {
+        const suggestions = RoutingEngine.searchSuggestions(query, 6);
+        renderSuggestions(suggestions, query);
+      }
+    });
+
+    inputEl.addEventListener('keydown', (e) => {
+      const items = dropdownEl.querySelectorAll('.autocomplete-item');
+      if (dropdownEl.style.display !== 'flex' || items.length === 0) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        focusedIndex = (focusedIndex + 1) % items.length;
+        updateFocus(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        focusedIndex = (focusedIndex - 1 + items.length) % items.length;
+        updateFocus(items);
+      } else if (e.key === 'Enter') {
+        if (focusedIndex >= 0 && focusedIndex < items.length) {
+          e.preventDefault();
+          items[focusedIndex].dispatchEvent(new MouseEvent('mousedown'));
+        }
+      } else if (e.key === 'Escape') {
+        dropdownEl.style.display = 'none';
+      }
+    });
+
+    function updateFocus(items) {
+      items.forEach((it, idx) => {
+        if (idx === focusedIndex) {
+          it.classList.add('ac-focused');
+          it.scrollIntoView({ block: 'nearest' });
+        } else {
+          it.classList.remove('ac-focused');
+        }
+      });
+    }
+
+    // Dismiss on click outside
+    document.addEventListener('click', (e) => {
+      if (!inputEl.contains(e.target) && !dropdownEl.contains(e.target)) {
+        dropdownEl.style.display = 'none';
+      }
+    });
+  }
+
+  // Initialize Autocompletes for modal inputs
+  setupAutocomplete(startLocationInput, startLocationDropdown);
+  setupAutocomplete(endLocationInput, endLocationDropdown);
+  setupAutocomplete(customDetourInput, detourLocationDropdown, (item) => {
+    if (!tempDetectedAreas.includes(item.name)) {
+      tempDetectedAreas.push(item.name);
+      renderDetectedAreaChips();
+      customDetourInput.value = '';
+    }
+  });
+
   // Analyze Route & Detect Areas
   btnAnalyzeRoute.addEventListener('click', async () => {
     const start = startLocationInput.value.trim();
@@ -672,8 +807,8 @@ document.addEventListener('DOMContentLoaded', () => {
     btnAnalyzeRoute.disabled = true;
 
     try {
-      const result = await TamilNaduRoutingEngine.getRouteAndIntermediateAreas(start, end);
-      tempDetectedAreas = result.areas;
+      const result = await RoutingEngine.analyzeRouteAreas(start, end);
+      tempDetectedAreas = result.areas.map(a => typeof a === 'string' ? a : a.name);
       renderDetectedAreaChips();
     } catch (err) {
       console.warn('Corridor detection failed:', err);
@@ -690,15 +825,16 @@ document.addEventListener('DOMContentLoaded', () => {
     areaCountText.textContent = `${tempDetectedAreas.length} areas`;
 
     if (tempDetectedAreas.length === 0) {
-      areaChipsList.innerHTML = `<span class="placeholder-text">No areas detected yet.</span>`;
+      areaChipsList.innerHTML = `<span class="placeholder-text">Click "Find Fastest Route" above to see all areas automatically.</span>`;
       return;
     }
 
     tempDetectedAreas.forEach((area, index) => {
+      const areaName = typeof area === 'string' ? area : area.name;
       const chip = document.createElement('div');
       chip.className = 'area-chip-removable';
       chip.innerHTML = `
-        <span>${area}</span>
+        <span>${areaName}</span>
         <button type="button" data-idx="${index}" title="Remove this area">&times;</button>
       `;
       areaChipsList.appendChild(chip);
@@ -721,6 +857,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tempDetectedAreas.push(val);
       renderDetectedAreaChips();
       customDetourInput.value = '';
+      if (detourLocationDropdown) detourLocationDropdown.style.display = 'none';
     }
   });
 
@@ -780,7 +917,7 @@ document.addEventListener('DOMContentLoaded', () => {
     clearTimeout(searchTimeout);
 
     searchTimeout = setTimeout(async () => {
-      const match = TamilNaduRoutingEngine.findKnownLocality(query);
+      const match = RoutingEngine.findKnownLocality(query) || await RoutingEngine.resolvePlace(query);
       if (match) {
         searchResultsPopover.style.display = 'block';
         searchResultAreaName.textContent = match.name;
@@ -789,8 +926,8 @@ document.addEventListener('DOMContentLoaded', () => {
         searchResultDesc.textContent = `Querying Open-Meteo precipitation models for ${match.name}...`;
 
         try {
-          const forecast = await WeatherService.getPrecipitationForPoint(match.lat, match.lon);
-          const hasRain = forecast.precipitationSum > 0.05 || forecast.precipitationProbability > 20;
+          const forecast = await WeatherEngine.getPrecipitationForPoint(match.lat, match.lon);
+          const hasRain = forecast.precipitationSum > 0.05 || forecast.precipitationProbability > 20 || forecast.isRain;
 
           if (hasRain) {
             searchResultStatusTag.className = 'search-status-tag rain';
@@ -799,7 +936,7 @@ document.addEventListener('DOMContentLoaded', () => {
           } else {
             searchResultStatusTag.className = 'search-status-tag';
             searchResultStatusTag.textContent = `☀️ Clear (${forecast.precipitationProbability}%)`;
-            searchResultDesc.textContent = `No rain predicted for ${match.name} currently. Good for travel.`;
+            searchResultDesc.textContent = `No rain predicted for ${match.name} currently (${forecast.temp}°C). Good for travel.`;
           }
         } catch (err) {
           searchResultDesc.textContent = `Weather check timed out. Coordinates: ${match.lat.toFixed(3)}, ${match.lon.toFixed(3)}.`;
@@ -808,10 +945,10 @@ document.addEventListener('DOMContentLoaded', () => {
         searchResultsPopover.style.display = 'block';
         searchResultAreaName.textContent = query;
         searchResultStatusTag.className = 'search-status-tag';
-        searchResultStatusTag.textContent = 'Local Area';
+        searchResultStatusTag.textContent = 'Custom Area';
         searchResultDesc.textContent = `Tap "+ Add Route" to map ${query} into your daily sales path.`;
       }
-    }, 350);
+    }, 200);
   });
 
   btnClearSearch.addEventListener('click', () => {
@@ -902,8 +1039,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const cardsHtml = await Promise.all(TN_HUBS.map(async (hub) => {
         try {
-          const res = await WeatherService.getPrecipitationForPoint(hub.lat, hub.lon);
-          const hasRain = res.precipitationSum > 0.05 || res.precipitationProbability > 25;
+          const res = await WeatherEngine.getPrecipitationForPoint(hub.lat, hub.lon);
+          const hasRain = res.precipitationSum > 0.05 || res.precipitationProbability > 25 || res.isRain;
           const badgeClass = hasRain ? 'radar-condition-badge rain' : 'radar-condition-badge clear';
           const badgeText = hasRain ? '🌧️ Rain Alert' : '☀️ Clear';
 
@@ -914,7 +1051,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="${badgeClass}">${badgeText}</span>
               </div>
               <div class="radar-temp-stat">${res.precipitationProbability}%</div>
-              <div class="radar-sub-stat">Rain Probability &bull; ${res.precipitationSum}mm</div>
+              <div class="radar-sub-stat">Rain Prob &bull; ${res.precipitationSum}mm &bull; ${res.temp}°C</div>
             </div>
           `;
         } catch {

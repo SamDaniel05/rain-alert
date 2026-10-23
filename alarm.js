@@ -28,9 +28,10 @@ const AlarmEngine = {
 
     // Traverse the route in chronological travel order
     orderedRouteAreas.forEach(area => {
-      const isRainy = rainyNames.has(area.toLowerCase());
+      const areaName = typeof area === 'string' ? area : (area.name || String(area));
+      const isRainy = rainyNames.has(areaName.toLowerCase());
       if (isRainy) {
-        currentStretch.push(area);
+        currentStretch.push(areaName);
       } else {
         if (currentStretch.length > 0) {
           stretches.push([...currentStretch]);
@@ -118,7 +119,8 @@ const AlarmEngine = {
 
       // Query weather for every micro-locality on the route
       for (const area of areas) {
-        const place = await RoutingEngine.resolvePlace(area);
+        const areaName = typeof area === 'string' ? area : (area.name || String(area));
+        const place = await RoutingEngine.resolvePlace(areaName);
         if (place) {
           const w = await WeatherEngine.getPointForecast(place.lat, place.lon);
           const currentRain = w.current.rain || w.current.precip;
@@ -127,7 +129,7 @@ const AlarmEngine = {
           // Sensitive threshold for micro-local showers
           if (currentRain > 0.3 || currentProb >= 35 || w.current.isRain) {
             rainThreats.push({
-              name: area,
+              name: areaName,
               rainProb: currentProb,
               rainMm: currentRain,
               condition: w.current.condition,
