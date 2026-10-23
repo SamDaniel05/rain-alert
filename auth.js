@@ -146,3 +146,11 @@ const AuthEngine = {
     }
   }
 };
+
+// Global exports
+if (typeof window !== 'undefined') {
+  window.AuthEngine = AuthEngine;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = AuthEngine;
+}

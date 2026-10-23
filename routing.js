@@ -1899,27 +1899,53 @@ const RoutingEngine = {
       }
     });
 
-    // Ensure start is at index 0 and destination is at the final index
-    if (!matchedAreas.some(c => c.name.toLowerCase() === startObj.name.toLowerCase())) {
-      matchedAreas.unshift({ name: startObj.name, lat: startObj.lat, lon: startObj.lon, region: startObj.region, progress: -0.01 });
-    }
-    if (!matchedAreas.some(c => c.name.toLowerCase() === endObj.name.toLowerCase())) {
-      matchedAreas.push({ name: endObj.name, lat: endObj.lat, lon: endObj.lon, region: endObj.region, progress: 1.01 });
-    }
+    // Filter intermediate matched areas to exclude start and end to avoid displaced endpoints
+    const startLow = startObj.name.toLowerCase();
+    const endLow = endObj.name.toLowerCase();
 
-    // Sort strictly in direction of travel (Start -> End)
-    matchedAreas.sort((a, b) => a.progress - b.progress);
+    const intermediate = matchedAreas.filter(c => {
+      const low = c.name.toLowerCase();
+      return low !== startLow && low !== endLow;
+    });
 
-    // Deduplicate
+    // Sort intermediate stops by chronological route progress
+    intermediate.sort((a, b) => a.progress - b.progress);
+
+    // Assemble final sequence strictly bound by Start and Destination
+    const sequence = [
+      { name: startObj.name, lat: startObj.lat, lon: startObj.lon, region: startObj.region, progress: 0 },
+      ...intermediate,
+      { name: endObj.name, lat: endObj.lat, lon: endObj.lon, region: endObj.region, progress: 1 }
+    ];
+
+    // Deduplicate preserving strict start-to-end order
     const deduped = [];
     const seenNames = new Set();
-    matchedAreas.forEach(item => {
+    sequence.forEach(item => {
       const low = item.name.toLowerCase();
       if (!seenNames.has(low)) {
         seenNames.add(low);
         deduped.push(item);
       }
     });
+
+    // Ensure start is strictly index 0 and destination is strictly the final item
+    if (deduped[0].name.toLowerCase() !== startLow) {
+      const sIdx = deduped.findIndex(d => d.name.toLowerCase() === startLow);
+      if (sIdx > 0) {
+        const [sItem] = deduped.splice(sIdx, 1);
+        deduped.unshift(sItem);
+      }
+    }
+    if (deduped[deduped.length - 1].name.toLowerCase() !== endLow) {
+      const eIdx = deduped.findIndex(d => d.name.toLowerCase() === endLow);
+      if (eIdx !== -1 && eIdx < deduped.length - 1) {
+        const [eItem] = deduped.splice(eIdx, 1);
+        deduped.push(eItem);
+      } else if (eIdx === -1) {
+        deduped.push({ name: endObj.name, lat: endObj.lat, lon: endObj.lon, region: endObj.region, progress: 1 });
+      }
+    }
 
     // Autonomous Gap Filling: If any segment has a gap > 5.5 km, synthesize intermediate waypoints
     const filledAreas = this.fillRouteGaps(deduped, sampledCoords, steps, startObj.name, endObj.name, 5.5);

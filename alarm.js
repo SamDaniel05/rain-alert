@@ -1,7 +1,7 @@
 // 5-Minute Daily Sentinel & Contiguous Stretch Audio Alarm Engine
 const AlarmEngine = {
   audioCtx: null,
-  speechSynth: window.speechSynthesis,
+  speechSynth: typeof window !== 'undefined' ? window.speechSynthesis : null,
   sentinelIntervalId: null,
   wakeLock: null,
   isRinging: false,
@@ -285,3 +285,11 @@ const AlarmEngine = {
     }
   }
 };
+
+// Global exports
+if (typeof window !== 'undefined') {
+  window.AlarmEngine = AlarmEngine;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = AlarmEngine;
+}
