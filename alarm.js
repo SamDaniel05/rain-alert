@@ -1,152 +1,171 @@
-// Continuous Route Sentinel & Audio Alarm Engine (Zero external dependencies)
+// 5-Minute Daily Sentinel & Audio Alarm Engine (Zero Paid APIs)
 const AlarmEngine = {
   audioCtx: null,
   speechSynth: window.speechSynthesis,
-  pollTimer: null,
-  countdownTimer: null,
+  sentinelIntervalId: null,
   wakeLock: null,
   isRinging: false,
-  alarmIntervalId: null,
-
-  // Alarm Settings
-  config: {
-    isMonitoring: false,
-    intervalMinutes: 5,
-    rainThresholdProb: 35, // Trigger alarm if rain probability >= 35%
-    rainThresholdMm: 0.5,  // Or precipitation >= 0.5 mm
-    voiceEnabled: true,
-    tone: 'siren', // 'siren' | 'chime'
-    keepScreenAwake: true
-  },
+  alarmLoopId: null,
 
   initAudio() {
     if (!this.audioCtx) {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (AudioContext) {
-        this.audioCtx = new AudioContext();
-      }
+      if (AudioContext) this.audioCtx = new AudioContext();
     }
     if (this.audioCtx && this.audioCtx.state === 'suspended') {
       this.audioCtx.resume();
     }
   },
 
-  // Start continuous 5-minute monitoring
-  startMonitoring(getRouteCallback, onScanComplete) {
-    this.config.isMonitoring = true;
-    this.initAudio();
+  // Start the background scanner that runs every 5 minutes
+  startBackgroundSentinel(getActiveDayRouteCallback, onScanLogCallback) {
+    if (this.sentinelIntervalId) clearInterval(this.sentinelIntervalId);
+
+    // Initial check immediately
+    this.checkTodayRouteRain(getActiveDayRouteCallback, onScanLogCallback);
+
+    // Run every 5 minutes (300,000 ms)
+    this.sentinelIntervalId = setInterval(() => {
+      this.checkTodayRouteRain(getActiveDayRouteCallback, onScanLogCallback);
+    }, 5 * 60 * 1000);
+
     this.requestWakeLock();
-    this.requestNotificationPermission();
-
-    // Run first scan immediately
-    this.executeSentinelScan(getRouteCallback, onScanComplete);
-
-    // Setup periodic polling
-    const intervalMs = this.config.intervalMinutes * 60 * 1000;
-    if (this.pollTimer) clearInterval(this.pollTimer);
-    this.pollTimer = setInterval(() => {
-      this.executeSentinelScan(getRouteCallback, onScanComplete);
-    }, intervalMs);
-
-    return true;
   },
 
-  stopMonitoring() {
-    this.config.isMonitoring = false;
-    if (this.pollTimer) {
-      clearInterval(this.pollTimer);
-      this.pollTimer = null;
+  stopBackgroundSentinel() {
+    if (this.sentinelIntervalId) {
+      clearInterval(this.sentinelIntervalId);
+      this.sentinelIntervalId = null;
     }
     this.releaseWakeLock();
-    this.stopRinging();
+    this.stopAlarm();
   },
 
-  async executeSentinelScan(getRouteCallback, onScanComplete) {
-    if (!this.config.isMonitoring) return;
+  async checkTodayRouteRain(getActiveDayRouteCallback, onScanLogCallback) {
     try {
-      const activeStops = getRouteCallback();
-      if (!activeStops || activeStops.length === 0) return;
-
-      // Query weather for all active remaining stops
-      const weatherData = await WeatherEngine.getRouteForecast(activeStops, new Date());
-      
-      // Analyze for rain threat
-      const rainThreats = weatherData.filter(wp => 
-        wp.weather.rainProb >= this.config.rainThresholdProb || 
-        wp.weather.rainMm >= this.config.rainThresholdMm ||
-        wp.weather.riskLevel === 'high'
-      );
-
-      if (onScanComplete) {
-        onScanComplete({
-          timestamp: new Date(),
-          weatherData,
-          rainThreats,
-          hasRain: rainThreats.length > 0
-        });
+      const route = getActiveDayRouteCallback();
+      if (!route || !route.enabled) {
+        if (onScanLogCallback) onScanLogCallback({ active: false, message: 'No active route scheduled for today.' });
+        return;
       }
+
+      // Check time window (e.g., 05:00 to 21:00)
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const [startH, startM] = (route.startTime || '05:00').split(':').map(Number);
+      const [endH, endM] = (route.endTime || '21:00').split(':').map(Number);
+      const windowStart = startH * 60 + startM;
+      const windowEnd = endH * 60 + endM;
+
+      if (currentMinutes < windowStart || currentMinutes > windowEnd) {
+        if (onScanLogCallback) onScanLogCallback({ 
+          active: false, 
+          message: `Outside active monitoring window (${route.startTime} - ${route.endTime}). Next scan at ${route.startTime}.` 
+        });
+        return;
+      }
+
+      // Area rain inspection
+      const areas = route.areas || [];
+      if (areas.length === 0) return;
+
+      const rainThreats = [];
+
+      // Query weather for each area in today's route
+      for (const area of areas) {
+        const place = await RoutingEngine.resolvePlace(area);
+        if (place) {
+          const w = await WeatherEngine.getPointForecast(place.lat, place.lon);
+          const currentRain = w.current.rain || w.current.precip;
+          const currentProb = w.hourly.precipitation_probability ? w.hourly.precipitation_probability[0] : 0;
+
+          if (currentRain > 0.4 || currentProb >= 35 || w.current.isRain) {
+            rainThreats.push({
+              name: area,
+              rainProb: currentProb,
+              rainMm: currentRain,
+              condition: w.current.condition,
+              icon: w.current.icon
+            });
+          }
+        }
+      }
+
+      const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
       if (rainThreats.length > 0) {
-        this.triggerAlarmAlert(rainThreats);
+        this.triggerAlarm(route, rainThreats);
+        if (onScanLogCallback) {
+          onScanLogCallback({
+            active: true,
+            hasRain: true,
+            timestamp,
+            rainThreats,
+            message: `🚨 Rain detected at: ${rainThreats.map(t => t.name).join(', ')}!`
+          });
+        }
+      } else {
+        if (onScanLogCallback) {
+          onScanLogCallback({
+            active: true,
+            hasRain: false,
+            timestamp,
+            rainThreats: [],
+            message: `All ${areas.length} areas on today's route (${route.startLocation} ➔ ${route.endLocation}) are clear.`
+          });
+        }
       }
-    } catch (err) {
-      console.warn('Sentinel scan error:', err);
+
+    } catch (e) {
+      console.warn('Sentinel scan failed:', e);
     }
   },
 
-  triggerAlarmAlert(rainThreats) {
-    this.startRinging();
-
-    // Vibrate mobile device (pattern: vibrate 600ms, pause 300ms, repeat)
-    if ('vibrate' in navigator) {
-      try {
-        navigator.vibrate([600, 300, 600, 300, 800]);
-      } catch (e) {}
-    }
-
-    const areaNames = rainThreats.map(t => t.name.split('(')[0].trim()).join(', ');
-    const maxProb = Math.max(...rainThreats.map(t => t.weather.rainProb));
-
-    // System push notification
-    this.sendPushNotification(
-      `🚨 RAIN ALERT: ${areaNames}`,
-      `${maxProb}% chance of rain detected ahead on your route! Pull over or wear raincoat.`
-    );
-
-    // Voice alert
-    if (this.config.voiceEnabled) {
-      this.speakAlert(
-        `Attention! Rain detected on your route around ${areaNames}. Rain probability is ${maxProb} percent. Please take shelter or put on your rain jacket.`
-      );
-    }
-  },
-
-  startRinging() {
+  triggerAlarm(route, rainThreats) {
     this.isRinging = true;
     this.initAudio();
-    this.playToneOnce(this.config.tone);
 
-    // Repeat tone every 3.5 seconds until dismissed
-    if (this.alarmIntervalId) clearInterval(this.alarmIntervalId);
-    this.alarmIntervalId = setInterval(() => {
+    // Loop sound every 3.5s until user dismisses
+    this.playTone();
+    if (this.alarmLoopId) clearInterval(this.alarmLoopId);
+    this.alarmLoopId = setInterval(() => {
       if (this.isRinging) {
-        this.playToneOnce(this.config.tone);
+        this.playTone();
       } else {
-        clearInterval(this.alarmIntervalId);
+        clearInterval(this.alarmLoopId);
       }
     }, 3500);
 
-    // Dispatch UI event for alarm modal/flashing banner
+    // Haptic vibration for mobile phones
+    if ('vibrate' in navigator) {
+      try { navigator.vibrate([700, 300, 700, 300, 1000]); } catch (e) {}
+    }
+
+    const threatNames = rainThreats.map(t => t.name).join(', ');
+    const maxProb = Math.max(...rainThreats.map(t => t.rainProb));
+
+    // Voice announcement via Web Speech
+    this.speakAlert(
+      `Rain Alert! Rain detected in ${threatNames} on your ${route.day} route. Please take shelter or wear your raincoat.`
+    );
+
+    // Push notification
+    this.sendNotification(
+      `🚨 RAIN ALERT: ${threatNames}`,
+      `Rain forecasted along your ${route.day} route (${maxProb}% chance). Pull over safely or take rain precautions.`
+    );
+
+    // Dispatch UI event for alarm modal popup
     window.dispatchEvent(new CustomEvent('mazhai-alarm-triggered', {
-      detail: { tone: this.config.tone }
+      detail: { route, rainThreats }
     }));
   },
 
-  stopRinging() {
+  stopAlarm() {
     this.isRinging = false;
-    if (this.alarmIntervalId) {
-      clearInterval(this.alarmIntervalId);
-      this.alarmIntervalId = null;
+    if (this.alarmLoopId) {
+      clearInterval(this.alarmLoopId);
+      this.alarmLoopId = null;
     }
     if (this.speechSynth) {
       this.speechSynth.cancel();
@@ -154,48 +173,29 @@ const AlarmEngine = {
     window.dispatchEvent(new CustomEvent('mazhai-alarm-dismissed'));
   },
 
-  playToneOnce(tone = 'siren') {
+  playTone() {
     if (!this.audioCtx) return;
     const ctx = this.audioCtx;
     const now = ctx.currentTime;
 
-    if (tone === 'siren') {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sawtooth';
+    // Siren alarm sound
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sawtooth';
 
-      osc.frequency.setValueAtTime(500, now);
-      osc.frequency.linearRampToValueAtTime(1000, now + 0.35);
-      osc.frequency.linearRampToValueAtTime(500, now + 0.7);
-      osc.frequency.linearRampToValueAtTime(1000, now + 1.05);
-      osc.frequency.linearRampToValueAtTime(500, now + 1.4);
+    osc.frequency.setValueAtTime(550, now);
+    osc.frequency.linearRampToValueAtTime(980, now + 0.35);
+    osc.frequency.linearRampToValueAtTime(550, now + 0.7);
+    osc.frequency.linearRampToValueAtTime(980, now + 1.05);
+    osc.frequency.linearRampToValueAtTime(550, now + 1.4);
 
-      gain.gain.setValueAtTime(0.4, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 1.6);
+    gain.gain.setValueAtTime(0.4, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 1.5);
 
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 1.6);
-    } else {
-      const freqs = [587.33, 739.99, 880.00, 1174.66]; // D maj chord
-      freqs.forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-
-        const startTime = now + (idx * 0.15);
-        gain.gain.setValueAtTime(0.001, startTime);
-        gain.gain.exponentialRampToValueAtTime(0.3, startTime + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.9);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(startTime);
-        osc.stop(startTime + 0.95);
-      });
-    }
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 1.5);
   },
 
   speakAlert(text) {
@@ -203,50 +203,37 @@ const AlarmEngine = {
     try {
       this.speechSynth.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.05;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
+      utterance.rate = 1.0;
+      utterance.pitch = 1.05;
       this.speechSynth.speak(utterance);
-    } catch (e) {
-      console.warn('Speech error:', e);
-    }
+    } catch (e) {}
   },
 
-  async requestWakeLock() {
-    if ('wakeLock' in navigator && this.config.keepScreenAwake) {
-      try {
-        this.wakeLock = await navigator.wakeLock.request('screen');
-      } catch (err) {
-        console.warn('Wake Lock request failed:', err);
-      }
-    }
-  },
-
-  releaseWakeLock() {
-    if (this.wakeLock) {
-      this.wakeLock.release().then(() => {
-        this.wakeLock = null;
-      }).catch(() => {});
-    }
-  },
-
-  async requestNotificationPermission() {
-    if (!('Notification' in window)) return false;
-    if (Notification.permission === 'granted') return true;
-    const res = await Notification.requestPermission();
-    return res === 'granted';
-  },
-
-  sendPushNotification(title, body) {
+  sendNotification(title, body) {
     if ('Notification' in window && Notification.permission === 'granted') {
       try {
         new Notification(title, {
           body,
           icon: 'manifest-icon.png',
-          tag: 'rain-alert-poll',
+          tag: 'mazhai-alarm-tag',
           renotify: true
         });
       } catch (e) {}
+    }
+  },
+
+  async requestWakeLock() {
+    if ('wakeLock' in navigator) {
+      try {
+        this.wakeLock = await navigator.wakeLock.request('screen');
+      } catch (e) {}
+    }
+  },
+
+  releaseWakeLock() {
+    if (this.wakeLock) {
+      this.wakeLock.release().catch(() => {});
+      this.wakeLock = null;
     }
   }
 };
