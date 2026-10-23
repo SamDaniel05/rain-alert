@@ -309,12 +309,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (userRoutes.length === 0) {
       alarmsList.innerHTML = `
-        <div style="text-align: center; padding: 40px 20px; color: #64748b;">
-          <p style="font-size: 2rem; margin-bottom: 8px;">⏰</p>
-          <p style="font-size: 0.95rem; font-weight: 600; color: #94a3b8;">No Route Alarms Set</p>
-          <p style="font-size: 0.8rem; margin-top: 4px;">Tap the <strong>+</strong> button at the bottom right to set up your weekly route alarms.</p>
+        <div class="empty-alarms-state">
+          <div class="empty-alarm-icon">⏰</div>
+          <div class="empty-alarm-title">No Route Alarms Set</div>
+          <div class="empty-alarm-desc">
+            Add your daily field sales routes or Ring Once trips to get automatic 5-min rain scans.
+          </div>
+          <button type="button" class="btn-empty-add-route" id="btnEmptyAdd">
+            <span>+</span> Set Up Your First Route
+          </button>
         </div>
       `;
+      const btnEmptyAdd = alarmsList.querySelector('#btnEmptyAdd');
+      if (btnEmptyAdd) {
+        btnEmptyAdd.addEventListener('click', openModal);
+      }
       return;
     }
 
@@ -440,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       sentinelDot.className = 'pulse-dot';
       sentinelTitle.textContent = `No Active Alarm for ${currentDay}`;
-      sentinelSub.textContent = `Tap '+' to schedule a route or turn on a Ring Once alarm`;
+      sentinelSub.textContent = `Tap + to set a route or toggle Ring Once`;
       AlarmEngine.stopBackgroundSentinel();
     }
   }

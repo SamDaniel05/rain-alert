@@ -266,14 +266,25 @@ body {
   align-items: center;
   gap: 12px;
   box-shadow: var(--shadow-sm);
+  min-width: 0;
 }
 
 .sentinel-indicator {
   display: flex;
-  align-items: center;
-  gap: 11px;
-  flex: 1;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1 1 0%;
   min-width: 0;
+  overflow: hidden;
+}
+
+.sentinel-details {
+  flex: 1 1 0%;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .pulse-dot {
@@ -282,6 +293,7 @@ body {
   border-radius: 50%;
   background: var(--text-muted);
   flex-shrink: 0;
+  margin-top: 4px;
 }
 
 .pulse-dot.active {
@@ -309,9 +321,13 @@ body {
 }
 
 .sentinel-title {
-  font-size: 0.84rem;
-  font-weight: 700;
+  font-size: 0.86rem;
+  font-weight: 800;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.25;
 }
 
 .sentinel-sub {
@@ -320,23 +336,37 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.35;
   margin-top: 1px;
 }
 
 .btn-quick-test {
+  flex-shrink: 0;
   background: var(--brand-primary-light);
   border: 1px solid var(--brand-primary-border);
   color: var(--brand-primary);
-  padding: 6px 12px;
+  padding: 7px 13px;
   border-radius: 20px;
-  font-size: 0.74rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 800;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .btn-quick-test:hover {
+  background: var(--brand-primary);
+  color: #fff;
+}
+
+[data-theme="dark"] .btn-quick-test {
+  background: rgba(244, 63, 94, 0.18);
+  border-color: rgba(244, 63, 94, 0.45);
+  color: #fda4af;
+}
+
+[data-theme="dark"] .btn-quick-test:hover {
   background: var(--brand-primary);
   color: #fff;
 }
@@ -380,6 +410,75 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* ==========================================================================
+   Empty Alarms State (BookMyShow / District Style)
+   ========================================================================== */
+.empty-alarms-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 44px 20px;
+  gap: 10px;
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-lg);
+  margin-top: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+.empty-alarm-icon {
+  font-size: 2.6rem;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.empty-alarm-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.empty-alarm-desc {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  max-width: 290px;
+}
+
+.btn-empty-add-route {
+  margin-top: 6px;
+  background: var(--brand-primary-light);
+  border: 1.5px solid var(--brand-primary-border);
+  color: var(--brand-primary);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+
+.btn-empty-add-route:hover {
+  background: var(--brand-primary);
+  color: #fff;
+}
+
+[data-theme="dark"] .btn-empty-add-route {
+  background: rgba(244, 63, 94, 0.16);
+  border-color: rgba(244, 63, 94, 0.45);
+  color: #fda4af;
+}
+
+[data-theme="dark"] .btn-empty-add-route:hover {
+  background: var(--brand-primary);
+  color: #fff;
 }
 
 /* Card */
@@ -597,6 +696,12 @@ input:checked + .slider:before { transform: translateX(20px); }
 .fab-icon {
   font-size: 1.3rem;
   line-height: 1;
+}
+
+@media (min-width: 600px) {
+  .fab-add-alarm {
+    right: calc(50% - 260px + 24px);
+  }
 }
 
 /* ==========================================================================
