@@ -13,17 +13,27 @@ document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
   const currentUserName = document.getElementById('currentUserName');
   const userAvatarLetter = document.getElementById('userAvatarLetter');
-  const btnLogout = document.getElementById('btnLogout');
+  const btnUserBadge = document.getElementById('btnUserBadge');
+  const btnOpenSettings = document.getElementById('btnOpenSettings');
   const sentinelBanner = document.getElementById('sentinelBanner');
   const sentinelDot = document.getElementById('sentinelDot');
   const sentinelTitle = document.getElementById('sentinelTitle');
   const sentinelSub = document.getElementById('sentinelSub');
   const btnQuickTest = document.getElementById('btnQuickTest');
 
-  // 3-Way Theme Management (System Default | Light Mode | Dark Mode)
+  // Settings Modal Elements
+  const settingsModal = document.getElementById('settingsModal');
+  const btnCloseSettings = document.getElementById('btnCloseSettings');
+  const btnDoneSettings = document.getElementById('btnDoneSettings');
+  const settingsAvatarLetter = document.getElementById('settingsAvatarLetter');
+  const settingsUserName = document.getElementById('settingsUserName');
+  const settingsUserEmail = document.getElementById('settingsUserEmail');
+  const btnLogoutFromSettings = document.getElementById('btnLogoutFromSettings');
+
+  // 3-Way Theme Management (System Default | Light Mode | Dark Mode) inside Settings
   // Featuring District / Ben 10 Upgrade / Symbiote radial ripple transition
   const THEME_STORAGE_KEY = 'mazhai_theme_preference';
-  const themeButtons = document.querySelectorAll('#themeSelector .theme-btn');
+  const themeOptions = document.querySelectorAll('#themeSelector .theme-card-option');
 
   function getEffectiveTheme(preference) {
     if (preference === 'system') {
@@ -40,8 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.documentElement.removeAttribute('data-theme');
     }
 
-    // Sync button active classes
-    themeButtons.forEach(btn => {
+    // Sync card option active classes
+    themeOptions.forEach(btn => {
       if (btn.getAttribute('data-theme-val') === preference) {
         btn.classList.add('active');
       } else {
@@ -77,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let y = originEvent ? originEvent.clientY : null;
 
     if (typeof x !== 'number' || typeof y !== 'number' || (x === 0 && y === 0)) {
-      const btn = clickedBtn || document.querySelector(`#themeSelector .theme-btn[data-theme-val="${preference}"]`);
+      const btn = clickedBtn || document.querySelector(`#themeSelector .theme-card-option[data-theme-val="${preference}"]`);
       if (btn) {
         const rect = btn.getBoundingClientRect();
         x = rect.left + rect.width / 2;
@@ -126,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saved = localStorage.getItem(THEME_STORAGE_KEY) || 'light';
     applyThemeDOM(saved);
 
-    themeButtons.forEach(btn => {
+    themeOptions.forEach(btn => {
       btn.addEventListener('click', (e) => {
         const pref = btn.getAttribute('data-theme-val');
         localStorage.setItem(THEME_STORAGE_KEY, pref);
@@ -138,13 +148,42 @@ document.addEventListener('DOMContentLoaded', () => {
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
       const currentPref = localStorage.getItem(THEME_STORAGE_KEY) || 'light';
       if (currentPref === 'system') {
-        const activeBtn = document.querySelector('#themeSelector .theme-btn[data-theme-val="system"]');
+        const activeBtn = document.querySelector('#themeSelector .theme-card-option[data-theme-val="system"]');
         switchThemeWithRadialTransition('system', null, activeBtn);
       }
     });
   }
 
   initTheme();
+
+  // Settings Sheet Controller
+  function openSettings() {
+    if (currentUser) {
+      if (settingsUserName) settingsUserName.textContent = currentUser.name || 'Sales Rep';
+      if (settingsUserEmail) settingsUserEmail.textContent = currentUser.email || 'sales@company.com';
+      if (settingsAvatarLetter) {
+        settingsAvatarLetter.textContent = (currentUser.name || 'S').trim().charAt(0).toUpperCase();
+      }
+    }
+    settingsModal.classList.add('open');
+  }
+
+  function closeSettings() {
+    settingsModal.classList.remove('open');
+  }
+
+  if (btnOpenSettings) btnOpenSettings.addEventListener('click', openSettings);
+  if (btnUserBadge) btnUserBadge.addEventListener('click', openSettings);
+  if (btnCloseSettings) btnCloseSettings.addEventListener('click', closeSettings);
+  if (btnDoneSettings) btnDoneSettings.addEventListener('click', closeSettings);
+
+  if (settingsModal) {
+    settingsModal.addEventListener('click', (e) => {
+      if (e.target === settingsModal) {
+        closeSettings();
+      }
+    });
+  }
 
   const alarmsList = document.getElementById('alarmsList');
   const alarmCountBadge = document.getElementById('alarmCountBadge');
@@ -250,14 +289,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  btnLogout.addEventListener('click', () => {
-    if (confirm('Log out of this account?')) {
-      AuthEngine.logout();
-      currentUser = null;
-      userRoutes = [];
-      checkAuth();
-    }
-  });
+  if (btnLogoutFromSettings) {
+    btnLogoutFromSettings.addEventListener('click', () => {
+      if (confirm('Log out of this account?')) {
+        closeSettings();
+        AuthEngine.logout();
+        currentUser = null;
+        userRoutes = [];
+        checkAuth();
+      }
+    });
+  }
 
   // Render Alarms List
   function renderAlarmsList() {

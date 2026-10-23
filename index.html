@@ -30,16 +30,14 @@
         </div>
       </div>
       <div class="header-right">
-        <!-- 3-Way Theme Switcher (System / Light / Dark) -->
-        <div class="theme-selector-pill" id="themeSelector" title="Theme Selector">
-          <button type="button" class="theme-btn" data-theme-val="system" title="Follow device theme">Auto</button>
-          <button type="button" class="theme-btn active" data-theme-val="light" title="Light mode">☀️</button>
-          <button type="button" class="theme-btn" data-theme-val="dark" title="Dark mode">🌙</button>
-        </div>
-        <!-- User Badge & Logout -->
-        <button class="user-badge-btn" id="btnLogout" title="Click to Switch User / Logout">
+        <!-- User Badge Button (opens settings) -->
+        <button class="user-badge-btn" id="btnUserBadge" title="Account profile & settings">
           <span class="user-avatar-circle" id="userAvatarLetter">S</span>
           <span class="user-name" id="currentUserName">Sales Rep</span>
+        </button>
+        <!-- Settings Button -->
+        <button class="btn-settings-icon" id="btnOpenSettings" title="App Settings & Theme">
+          ⚙️
         </button>
       </div>
     </header>
@@ -173,6 +171,110 @@
       <div class="sheet-footer">
         <button type="button" class="btn-cancel" id="btnCancelModal">Cancel</button>
         <button type="button" class="btn-save-alarm" id="btnSaveAlarm">Save Alarm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SETTINGS & APPEARANCE MODAL ================= -->
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="alarm-sheet settings-sheet">
+      <div class="sheet-header">
+        <div class="sheet-header-title">
+          <span style="font-size: 1.2rem;">⚙️</span>
+          <h3>Settings</h3>
+        </div>
+        <button class="btn-close-modal" id="btnCloseSettings">&times;</button>
+      </div>
+
+      <div class="sheet-body">
+        
+        <!-- Appearance / Theme Section -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <span class="settings-section-label">Appearance & Display</span>
+            <span class="settings-section-sub">Choose your visual theme</span>
+          </div>
+
+          <div class="theme-options-grid" id="themeSelector">
+            <!-- Light Mode Option -->
+            <button type="button" class="theme-card-option" data-theme-val="light">
+              <div class="theme-card-icon">☀️</div>
+              <div class="theme-card-text">
+                <span class="theme-card-title">Light Mode</span>
+                <span class="theme-card-desc">Clear visibility for daytime outdoor routes</span>
+              </div>
+              <div class="theme-radio-indicator"></div>
+            </button>
+
+            <!-- Dark Mode Option -->
+            <button type="button" class="theme-card-option" data-theme-val="dark">
+              <div class="theme-card-icon">🌙</div>
+              <div class="theme-card-text">
+                <span class="theme-card-title">Dark Mode</span>
+                <span class="theme-card-desc">Low glare and battery-saving night theme</span>
+              </div>
+              <div class="theme-radio-indicator"></div>
+            </button>
+
+            <!-- System Auto Option -->
+            <button type="button" class="theme-card-option" data-theme-val="system">
+              <div class="theme-card-icon">📱</div>
+              <div class="theme-card-text">
+                <span class="theme-card-title">System Default</span>
+                <span class="theme-card-desc">Automatically tracks your device's display setting</span>
+              </div>
+              <div class="theme-radio-indicator"></div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sales Officer Account Section -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <span class="settings-section-label">Sales Officer Profile</span>
+            <span class="settings-section-sub">Strict multi-user route isolation active</span>
+          </div>
+          
+          <div class="settings-account-card">
+            <div class="settings-user-info">
+              <div class="user-avatar-circle large" id="settingsAvatarLetter">S</div>
+              <div class="settings-user-details">
+                <span class="settings-user-name" id="settingsUserName">Sales Rep</span>
+                <span class="settings-user-email" id="settingsUserEmail">sales@company.com</span>
+              </div>
+            </div>
+            <button type="button" class="btn-settings-logout" id="btnLogoutFromSettings">
+              Logout
+            </button>
+          </div>
+        </div>
+
+        <!-- Audio & 5-Min Scanner Status -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <span class="settings-section-label">Monitoring Sentinel</span>
+            <span class="settings-section-sub">Autonomous rain guardian features</span>
+          </div>
+          <div class="settings-row-item">
+            <div>
+              <div class="settings-row-title">Rain Siren & Chimes</div>
+              <div class="settings-row-desc">Plays Web Audio siren when rain hits route</div>
+            </div>
+            <span class="settings-status-pill active">Active</span>
+          </div>
+          <div class="settings-row-item">
+            <div>
+              <div class="settings-row-title">Tamil Nadu Voice Alerts</div>
+              <div class="settings-row-desc">Announces contiguous rain stretches</div>
+            </div>
+            <span class="settings-status-pill active">Active</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="sheet-footer">
+        <button type="button" class="btn-save-alarm" id="btnDoneSettings">Done</button>
       </div>
     </div>
   </div>
