@@ -7,7 +7,9 @@
   
   <!-- PWA & Mobile Web Meta -->
   <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌧️</text></svg>">
   <meta name="theme-color" content="#f8f9fc">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="Alarm app that monitors your 6-day weekly field sales routes for rain every 5 minutes.">
@@ -89,7 +91,7 @@
         
         <!-- Schedule Type: Weekly vs Ring Once -->
         <div class="form-group">
-          <label>Alarm Schedule Type</label>
+          <div class="form-label">Alarm Schedule Type</div>
           <div class="schedule-type-toggle">
             <button type="button" class="btn-sched-type active" id="typeWeeklyBtn">🔁 Weekly Routine</button>
             <button type="button" class="btn-sched-type" id="typeOnceBtn">⚡ Ring Once / Today Only</button>
@@ -98,7 +100,7 @@
 
         <!-- Day Selector (Visible for Weekly Routine) -->
         <div class="form-group" id="dayPickerGroup">
-          <label>Select Day of the Week</label>
+          <div class="form-label">Select Day of the Week</div>
           <div class="day-picker" id="dayPicker">
             <button type="button" class="day-btn active" data-day="Monday">Mon</button>
             <button type="button" class="day-btn" data-day="Tuesday">Tue</button>
@@ -117,28 +119,28 @@
 
         <!-- Monitoring Window -->
         <div class="form-group">
-          <label>Active Monitoring Hours (5-min scans)</label>
+          <div class="form-label">Active Monitoring Hours (5-min scans)</div>
           <div class="time-range-row">
             <div class="time-box">
-              <span>Start:</span>
-              <input type="time" id="startTimeInput" value="05:00">
+              <label for="startTimeInput">Start:</label>
+              <input type="time" id="startTimeInput" value="05:00" aria-label="Monitoring Start Time">
             </div>
             <span class="range-arrow">&rarr;</span>
             <div class="time-box">
-              <span>End:</span>
-              <input type="time" id="endTimeInput" value="21:00">
+              <label for="endTimeInput">End:</label>
+              <input type="time" id="endTimeInput" value="21:00" aria-label="Monitoring End Time">
             </div>
           </div>
         </div>
 
         <!-- Start & Destination Inputs -->
         <div class="form-group">
-          <label>Where are you starting from?</label>
+          <label for="startLocationInput">Where are you starting from?</label>
           <input type="text" class="text-input" id="startLocationInput" placeholder="e.g. Adyar or Wimco Nagar" value="">
         </div>
 
         <div class="form-group">
-          <label>Where will you be going today?</label>
+          <label for="endLocationInput">Where will you be going today?</label>
           <input type="text" class="text-input" id="endLocationInput" placeholder="e.g. Kelambakkam" value="">
         </div>
 
@@ -161,7 +163,7 @@
 
           <!-- Add Custom Detour Input -->
           <div class="add-detour-row">
-            <input type="text" class="detour-input" id="customDetourInput" placeholder="Add extra detour (e.g. Pallikaranai, Kovalam)">
+            <input type="text" class="detour-input" id="customDetourInput" placeholder="Add extra detour (e.g. Pallikaranai, Kovalam)" aria-label="Add custom detour area">
             <button type="button" class="btn-add-detour" id="btnAddDetour">+ Add</button>
           </div>
         </div>
@@ -295,17 +297,17 @@
 
       <form id="authForm" class="auth-form">
         <div class="form-group" id="nameGroup" style="display: none;">
-          <label>Full Name / Sales Officer</label>
+          <label for="authName">Full Name / Sales Officer</label>
           <input type="text" class="text-input" id="authName" placeholder="e.g. Sam's Dad">
         </div>
 
         <div class="form-group">
-          <label>Email Address</label>
+          <label for="authEmail">Email Address</label>
           <input type="email" class="text-input" id="authEmail" placeholder="e.g. name@company.com" required>
         </div>
 
         <div class="form-group">
-          <label>Password</label>
+          <label for="authPassword">Password</label>
           <input type="password" class="text-input" id="authPassword" placeholder="••••••••" required>
         </div>
 

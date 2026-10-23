@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       const btnEmptyAdd = alarmsList.querySelector('#btnEmptyAdd');
       if (btnEmptyAdd) {
-        btnEmptyAdd.addEventListener('click', openModal);
+        btnEmptyAdd.addEventListener('click', openAddModal);
       }
       return;
     }
@@ -526,7 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
     onceInfoBanner.style.display = 'block';
   });
 
-  btnOpenAddModal.addEventListener('click', () => {
+  function openAddModal() {
     tempDetectedAreas = [];
     startLocationInput.value = '';
     endLocationInput.value = '';
@@ -536,7 +536,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Default to weekly
     typeWeeklyBtn.click();
     addAlarmModal.classList.add('open');
-  });
+  }
+
+  btnOpenAddModal.addEventListener('click', openAddModal);
 
   function closeModal() {
     addAlarmModal.classList.remove('open');

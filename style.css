@@ -801,7 +801,8 @@ input:checked + .slider:before { transform: translateX(20px); }
   gap: 6px;
 }
 
-.form-group label {
+.form-group label,
+.form-group .form-label {
   font-size: 0.74rem;
   font-weight: 800;
   color: var(--text-secondary);
