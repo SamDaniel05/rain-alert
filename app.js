@@ -1,4 +1,4 @@
-// Main Application Logic for MazhaiAlarm (True Alarm App Experience)
+// Main Application Logic for MazhaiAlarm (BookMyShow / District / PVR Consumer Experience)
 document.addEventListener('DOMContentLoaded', () => {
   // Ensure demo user exists
   AuthEngine.initSeedDemoUser();
@@ -9,17 +9,61 @@ document.addEventListener('DOMContentLoaded', () => {
   let tempDetectedAreas = [];
   let selectedDay = 'Monday';
   let selectedScheduleType = 'weekly'; // 'weekly' or 'once'
+  let activeDayFilter = 'all';
 
-  // DOM Elements
+  // DOM Elements - Header
   const currentUserName = document.getElementById('currentUserName');
   const userAvatarLetter = document.getElementById('userAvatarLetter');
   const btnUserBadge = document.getElementById('btnUserBadge');
   const btnOpenSettings = document.getElementById('btnOpenSettings');
-  const sentinelBanner = document.getElementById('sentinelBanner');
-  const sentinelDot = document.getElementById('sentinelDot');
-  const sentinelTitle = document.getElementById('sentinelTitle');
-  const sentinelSub = document.getElementById('sentinelSub');
+  const btnLocationSelect = document.getElementById('btnLocationSelect');
+
+  // Hero & Today's Journey Card (BookMyShow "Pick up where you left off" style)
+  const heroPulseDot = document.getElementById('heroPulseDot');
   const btnQuickTest = document.getElementById('btnQuickTest');
+  const todayPickupCard = document.getElementById('todayPickupCard');
+
+  // Search Bar Elements (District style)
+  const quickAreaSearchInput = document.getElementById('quickAreaSearchInput');
+  const btnClearSearch = document.getElementById('btnClearSearch');
+  const searchResultsPopover = document.getElementById('searchResultsPopover');
+  const searchResultAreaName = document.getElementById('searchResultAreaName');
+  const searchResultStatusTag = document.getElementById('searchResultStatusTag');
+  const searchResultDesc = document.getElementById('searchResultDesc');
+
+  // Category & Filter Controls (District & PVR style)
+  const categoryPills = document.getElementById('categoryPills');
+  const dayFilterScroll = document.getElementById('dayFilterScroll');
+  const weeklySection = document.getElementById('weeklySection');
+  const radarSection = document.getElementById('radarSection');
+  const alarmsList = document.getElementById('alarmsList');
+  const alarmCountBadge = document.getElementById('alarmCountBadge');
+  const radarGrid = document.getElementById('radarGrid');
+  const btnRefreshRadar = document.getElementById('btnRefreshRadar');
+
+  // Bottom Navigation Bar
+  const bottomNavTabs = document.querySelectorAll('.bottom-nav-bar .nav-tab');
+  const btnNavAddRoute = document.getElementById('btnNavAddRoute');
+
+  // Modal Elements - Add Route
+  const addAlarmModal = document.getElementById('addAlarmModal');
+  const btnCloseModal = document.getElementById('btnCloseModal');
+  const btnCancelModal = document.getElementById('btnCancelModal');
+  const btnSaveAlarm = document.getElementById('btnSaveAlarm');
+  const typeWeeklyBtn = document.getElementById('typeWeeklyBtn');
+  const typeOnceBtn = document.getElementById('typeOnceBtn');
+  const dayPickerGroup = document.getElementById('dayPickerGroup');
+  const onceInfoBanner = document.getElementById('onceInfoBanner');
+  const dayPicker = document.getElementById('dayPicker');
+  const startTimeInput = document.getElementById('startTimeInput');
+  const endTimeInput = document.getElementById('endTimeInput');
+  const startLocationInput = document.getElementById('startLocationInput');
+  const endLocationInput = document.getElementById('endLocationInput');
+  const btnAnalyzeRoute = document.getElementById('btnAnalyzeRoute');
+  const areaChipsList = document.getElementById('areaChipsList');
+  const areaCountText = document.getElementById('areaCountText');
+  const customDetourInput = document.getElementById('customDetourInput');
+  const btnAddDetour = document.getElementById('btnAddDetour');
 
   // Settings Modal Elements
   const settingsModal = document.getElementById('settingsModal');
@@ -30,8 +74,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const settingsUserEmail = document.getElementById('settingsUserEmail');
   const btnLogoutFromSettings = document.getElementById('btnLogoutFromSettings');
 
-  // 3-Way Theme Management (System Default | Light Mode | Dark Mode) inside Settings
-  // Featuring District / Ben 10 Upgrade / Symbiote radial ripple transition
+  // Auth Modal Elements
+  const authModal = document.getElementById('authModal');
+  const authForm = document.getElementById('authForm');
+  const tabLogin = document.getElementById('tabLogin');
+  const tabSignUp = document.getElementById('tabSignUp');
+  const nameGroup = document.getElementById('nameGroup');
+  const authName = document.getElementById('authName');
+  const authEmail = document.getElementById('authEmail');
+  const authPassword = document.getElementById('authPassword');
+  const btnAuthSubmit = document.getElementById('btnAuthSubmit');
+  let isSignUpMode = false;
+
+  // Active Alarm Ringing Overlay
+  const alarmRingingOverlay = document.getElementById('alarmRingingOverlay');
+  const ringingDesc = document.getElementById('ringingDesc');
+  const btnDismissAlarm = document.getElementById('btnDismissAlarm');
+
+  // ==========================================================================
+  // Theme Engine (District / Ben 10 Upgrade / Symbiote Radial Ripple)
+  // ==========================================================================
   const THEME_STORAGE_KEY = 'mazhai_theme_preference';
   const themeOptions = document.querySelectorAll('#themeSelector .theme-card-option');
 
@@ -62,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Update browser status bar / theme-color meta
     const metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) {
-      metaTheme.setAttribute('content', effective === 'dark' ? '#0b0f19' : '#f8f9fc');
+      metaTheme.setAttribute('content', effective === 'dark' ? '#090d16' : '#f8f9fc');
     }
   }
 
@@ -70,19 +132,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentEffective = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
     const targetEffective = getEffectiveTheme(preference);
 
-    // If effective theme isn't changing, just update button state
     if (currentEffective === targetEffective) {
       applyThemeDOM(preference);
       return;
     }
 
-    // Fallback if browser doesn't support View Transitions or prefers reduced motion
     if (!document.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       applyThemeDOM(preference);
       return;
     }
 
-    // Calculate origin coordinates (where click happened or center of the clicked button)
     let x = originEvent ? originEvent.clientX : null;
     let y = originEvent ? originEvent.clientY : null;
 
@@ -98,7 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Calculate maximum radius to fully engulf the viewport from (x, y)
     const maxRadius = Math.ceil(Math.hypot(
       Math.max(x, window.innerWidth - x),
       Math.max(y, window.innerHeight - y)
@@ -110,9 +168,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       await transition.ready;
-
-      // Animate the incoming theme radiating outward from the origin point
-      // like Ben 10's Upgrade or a symbiote engulfing the entire interface
       document.documentElement.animate(
         {
           clipPath: [
@@ -122,17 +177,16 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
           duration: 520,
-          easing: 'cubic-bezier(0.22, 1, 0.36, 1)', // Smooth organic expansion
+          easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
           pseudoElement: '::view-transition-new(root)'
         }
       );
     } catch (err) {
-      // Transition cancelled or aborted
+      // Ignored
     }
   }
 
   function initTheme() {
-    // Default to 'light' mode as preferred by user, but persist if they chose 'system' or 'dark'
     const saved = localStorage.getItem(THEME_STORAGE_KEY) || 'light';
     applyThemeDOM(saved);
 
@@ -144,7 +198,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // System theme live change listener
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
       const currentPref = localStorage.getItem(THEME_STORAGE_KEY) || 'light';
       if (currentPref === 'system') {
@@ -156,88 +209,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initTheme();
 
-  // Settings Sheet Controller
-  function openSettings() {
-    if (currentUser) {
-      if (settingsUserName) settingsUserName.textContent = currentUser.name || 'Sales Rep';
-      if (settingsUserEmail) settingsUserEmail.textContent = currentUser.email || 'sales@company.com';
-      if (settingsAvatarLetter) {
-        settingsAvatarLetter.textContent = (currentUser.name || 'S').trim().charAt(0).toUpperCase();
-      }
-    }
-    settingsModal.classList.add('open');
-  }
-
-  function closeSettings() {
-    settingsModal.classList.remove('open');
-  }
-
-  if (btnOpenSettings) btnOpenSettings.addEventListener('click', openSettings);
-  if (btnUserBadge) btnUserBadge.addEventListener('click', openSettings);
-  if (btnCloseSettings) btnCloseSettings.addEventListener('click', closeSettings);
-  if (btnDoneSettings) btnDoneSettings.addEventListener('click', closeSettings);
-
-  if (settingsModal) {
-    settingsModal.addEventListener('click', (e) => {
-      if (e.target === settingsModal) {
-        closeSettings();
-      }
-    });
-  }
-
-  const alarmsList = document.getElementById('alarmsList');
-  const alarmCountBadge = document.getElementById('alarmCountBadge');
-  const btnOpenAddModal = document.getElementById('btnOpenAddModal');
-
-  // Modal Elements
-  const addAlarmModal = document.getElementById('addAlarmModal');
-  const btnCloseModal = document.getElementById('btnCloseModal');
-  const btnCancelModal = document.getElementById('btnCancelModal');
-  const btnSaveAlarm = document.getElementById('btnSaveAlarm');
-  const typeWeeklyBtn = document.getElementById('typeWeeklyBtn');
-  const typeOnceBtn = document.getElementById('typeOnceBtn');
-  const dayPickerGroup = document.getElementById('dayPickerGroup');
-  const onceInfoBanner = document.getElementById('onceInfoBanner');
-  const dayPicker = document.getElementById('dayPicker');
-  const startTimeInput = document.getElementById('startTimeInput');
-  const endTimeInput = document.getElementById('endTimeInput');
-  const startLocationInput = document.getElementById('startLocationInput');
-  const endLocationInput = document.getElementById('endLocationInput');
-  const btnAnalyzeRoute = document.getElementById('btnAnalyzeRoute');
-  const areaChipsList = document.getElementById('areaChipsList');
-  const areaCountText = document.getElementById('areaCountText');
-  const customDetourInput = document.getElementById('customDetourInput');
-  const btnAddDetour = document.getElementById('btnAddDetour');
-
-  // Auth Elements
-  const authModal = document.getElementById('authModal');
-  const authForm = document.getElementById('authForm');
-  const tabLogin = document.getElementById('tabLogin');
-  const tabSignUp = document.getElementById('tabSignUp');
-  const nameGroup = document.getElementById('nameGroup');
-  const authName = document.getElementById('authName');
-  const authEmail = document.getElementById('authEmail');
-  const authPassword = document.getElementById('authPassword');
-  const btnAuthSubmit = document.getElementById('btnAuthSubmit');
-  let isSignUpMode = false;
-
-  // Active Alarm Ringing Overlay
-  const alarmRingingOverlay = document.getElementById('alarmRingingOverlay');
-  const ringingDesc = document.getElementById('ringingDesc');
-  const btnDismissAlarm = document.getElementById('btnDismissAlarm');
-
-  // Check Authentication & Enforce Strict User Data Isolation
+  // ==========================================================================
+  // Check Authentication & User Isolation
+  // ==========================================================================
   function checkAuth() {
     currentUser = AuthEngine.getCurrentUser();
     if (!currentUser) {
       userRoutes = [];
       renderAlarmsList();
+      renderTodayPickupCard();
       AlarmEngine.stopBackgroundSentinel();
       currentUserName.textContent = 'Guest';
       if (userAvatarLetter) userAvatarLetter.textContent = 'G';
-      sentinelDot.className = 'pulse-dot';
-      sentinelTitle.textContent = 'Account Locked / Logged Out';
-      sentinelSub.textContent = 'Please log in to view your personal routes';
       authModal.classList.add('open');
     } else {
       authModal.classList.remove('open');
@@ -245,9 +228,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (userAvatarLetter) {
         userAvatarLetter.textContent = (currentUser.name || 'S').trim().charAt(0).toUpperCase();
       }
-      // Load strictly this user's isolated routes
       userRoutes = AuthEngine.getUserRoutes(currentUser.id);
       renderAlarmsList();
+      renderTodayPickupCard();
       initTodaySentinel();
     }
   }
@@ -279,7 +262,6 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         currentUser = AuthEngine.login(authEmail.value, authPassword.value);
       }
-      // Clear inputs
       authName.value = '';
       authEmail.value = '';
       authPassword.value = '';
@@ -289,9 +271,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Settings Sheet Controller
+  function openSettings() {
+    if (currentUser) {
+      if (settingsUserName) settingsUserName.textContent = currentUser.name || 'Sales Rep';
+      if (settingsUserEmail) settingsUserEmail.textContent = currentUser.email || 'sales@company.com';
+      if (settingsAvatarLetter) {
+        settingsAvatarLetter.textContent = (currentUser.name || 'S').trim().charAt(0).toUpperCase();
+      }
+    }
+    settingsModal.classList.add('open');
+  }
+
+  function closeSettings() {
+    settingsModal.classList.remove('open');
+  }
+
+  if (btnOpenSettings) btnOpenSettings.addEventListener('click', openSettings);
+  if (btnUserBadge) btnUserBadge.addEventListener('click', openSettings);
+  if (btnCloseSettings) btnCloseSettings.addEventListener('click', closeSettings);
+  if (btnDoneSettings) btnDoneSettings.addEventListener('click', closeSettings);
+
+  if (settingsModal) {
+    settingsModal.addEventListener('click', (e) => {
+      if (e.target === settingsModal) closeSettings();
+    });
+  }
+
   if (btnLogoutFromSettings) {
     btnLogoutFromSettings.addEventListener('click', () => {
-      if (confirm('Log out of this account?')) {
+      if (confirm('Log out or switch account?')) {
         closeSettings();
         AuthEngine.logout();
         currentUser = null;
@@ -301,22 +310,141 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Render Alarms List
+  // ==========================================================================
+  // Today's Route Resolver
+  // ==========================================================================
+  function getTodayRoute() {
+    const activeOnce = userRoutes.find(r => r.type === 'once' && r.enabled);
+    if (activeOnce) return activeOnce;
+
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const currentDay = days[new Date().getDay()];
+    return userRoutes.find(r => r.type !== 'once' && r.day.toLowerCase() === currentDay.toLowerCase() && r.enabled) || null;
+  }
+
+  // ==========================================================================
+  // Render Today's Journey Card (BookMyShow "Pick up where you left off" Style)
+  // ==========================================================================
+  function renderTodayPickupCard(liveMessage, hasRain) {
+    if (!todayPickupCard) return;
+
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const currentDay = days[new Date().getDay()];
+    const todayRoute = getTodayRoute();
+
+    if (todayRoute) {
+      const isOnce = todayRoute.type === 'once';
+      const dayTag = isOnce ? '⚡ RING ONCE ACTIVE' : `TODAY'S JOURNEY &bull; ${todayRoute.day.toUpperCase()}`;
+      const statusText = liveMessage 
+        ? liveMessage 
+        : `Scanning all ${todayRoute.areas.length} areas every 5 mins`;
+
+      const stopsChips = (todayRoute.areas || []).map(a => `<span class="mini-area-chip">${a}</span>`).join('');
+
+      todayPickupCard.innerHTML = `
+        <div class="pickup-card-header">
+          <div class="pickup-title-group">
+            <span class="pickup-tag">${dayTag}</span>
+            <h3 class="pickup-route-name">${todayRoute.startLocation} <span style="color: var(--brand-primary); font-size: 1rem;">➔</span> ${todayRoute.endLocation}</h3>
+          </div>
+          <label class="switch" title="Toggle Today's Sentinel Alarm">
+            <input type="checkbox" class="toggle-pickup-alarm" data-id="${todayRoute.id}" ${todayRoute.enabled ? 'checked' : ''} aria-label="Toggle today's sentinel">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="pickup-card-body">
+          <div class="pickup-meta-row">
+            <span class="pickup-time-pill">⏰ ${todayRoute.startTime} – ${todayRoute.endTime}</span>
+            <span class="pickup-status-chip ${hasRain ? 'rain' : ''}">
+              ${hasRain ? '🚨 Rain Detected on Route' : '🌤️ ' + statusText}
+            </span>
+          </div>
+
+          <div class="pickup-stops-label">Areas Monitored (${(todayRoute.areas || []).length} stops)</div>
+          <div class="pickup-chips-row">
+            ${stopsChips}
+          </div>
+
+          <button type="button" class="btn-pickup-cta" id="btnPickupCta">
+            🔊 Test Rain Alarm For This Route
+          </button>
+        </div>
+      `;
+
+      // Event handlers for today's card
+      const chk = todayPickupCard.querySelector('.toggle-pickup-alarm');
+      if (chk) {
+        chk.addEventListener('change', (e) => {
+          todayRoute.enabled = e.target.checked;
+          AuthEngine.saveUserRoutes(currentUser.id, userRoutes);
+          renderAlarmsList();
+          renderTodayPickupCard();
+          initTodaySentinel();
+        });
+      }
+
+      const btnCta = todayPickupCard.querySelector('#btnPickupCta');
+      if (btnCta) {
+        btnCta.addEventListener('click', () => {
+          btnQuickTest.click();
+        });
+      }
+    } else {
+      // Empty State for Today's Journey
+      todayPickupCard.innerHTML = `
+        <div class="pickup-card-header">
+          <div class="pickup-title-group">
+            <span class="pickup-tag">TODAY'S JOURNEY &bull; ${currentDay.toUpperCase()}</span>
+            <h3 class="pickup-route-name">No Route Active For Today</h3>
+          </div>
+        </div>
+        <div class="pickup-card-body">
+          <p class="pickup-empty-desc">
+            You don't have a scheduled route active for ${currentDay}. Set up your fastest path or turn on a Ring Once alarm to monitor rain stops.
+          </p>
+          <button type="button" class="btn-pickup-cta" id="btnSetTodayRoute">
+            + Set Up Today's Route
+          </button>
+        </div>
+      `;
+
+      const btnSet = todayPickupCard.querySelector('#btnSetTodayRoute');
+      if (btnSet) {
+        btnSet.addEventListener('click', openAddModal);
+      }
+    }
+  }
+
+  // ==========================================================================
+  // Render Alarms List (PVR Ticket Style)
+  // ==========================================================================
   function renderAlarmsList() {
     alarmsList.innerHTML = '';
-    const activeCount = userRoutes.filter(r => r.enabled).length;
-    alarmCountBadge.textContent = `${activeCount} Active / ${userRoutes.length} Routes`;
 
-    if (userRoutes.length === 0) {
+    // Filter routes by active day filter
+    let filtered = userRoutes;
+    if (activeDayFilter === 'once') {
+      filtered = userRoutes.filter(r => r.type === 'once');
+    } else if (activeDayFilter !== 'all') {
+      filtered = userRoutes.filter(r => r.type !== 'once' && r.day.toLowerCase() === activeDayFilter.toLowerCase());
+    }
+
+    const activeCount = userRoutes.filter(r => r.enabled).length;
+    alarmCountBadge.textContent = `${activeCount} Active / ${userRoutes.length} Total`;
+
+    if (filtered.length === 0) {
+      const msg = activeDayFilter === 'all'
+        ? 'Add your daily field sales routes or Ring Once trips to get automatic 5-min rain scans.'
+        : `No route alarms set for ${activeDayFilter}. Tap below to set one up.`;
+
       alarmsList.innerHTML = `
         <div class="empty-alarms-state">
           <div class="empty-alarm-icon">⏰</div>
           <div class="empty-alarm-title">No Route Alarms Set</div>
-          <div class="empty-alarm-desc">
-            Add your daily field sales routes or Ring Once trips to get automatic 5-min rain scans.
-          </div>
+          <div class="empty-alarm-desc">${msg}</div>
           <button type="button" class="btn-empty-add-route" id="btnEmptyAdd">
-            <span>+</span> Set Up Your First Route
+            <span>+</span> Set Up Route Alarm
           </button>
         </div>
       `;
@@ -327,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    userRoutes.forEach((route, index) => {
+    filtered.forEach((route) => {
       const card = document.createElement('div');
       card.className = `alarm-card ${route.enabled ? '' : 'disabled'}`;
       
@@ -356,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
           <label class="switch" title="Toggle route alarm on/off">
-            <input type="checkbox" class="toggle-route-alarm" data-id="${route.id}" ${route.enabled ? 'checked' : ''}>
+            <input type="checkbox" class="toggle-route-alarm" data-id="${route.id}" ${route.enabled ? 'checked' : ''} aria-label="Toggle Route Alarm">
             <span class="slider"></span>
           </label>
         </div>
@@ -388,6 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
           r.enabled = e.target.checked;
           AuthEngine.saveUserRoutes(currentUser.id, userRoutes);
           renderAlarmsList();
+          renderTodayPickupCard();
           initTodaySentinel();
         }
       });
@@ -401,60 +530,54 @@ document.addEventListener('DOMContentLoaded', () => {
           userRoutes = userRoutes.filter(r => r.id !== id);
           AuthEngine.saveUserRoutes(currentUser.id, userRoutes);
           renderAlarmsList();
+          renderTodayPickupCard();
           initTodaySentinel();
         }
       });
     });
   }
 
-  // Today's Sentinel Runner
-  function getTodayRoute() {
-    // 1. Any Ring Once / On-Demand alarm that is currently toggled ON takes immediate active priority!
-    const activeOnce = userRoutes.find(r => r.type === 'once' && r.enabled);
-    if (activeOnce) return activeOnce;
+  // Day Filter Click Handlers
+  dayFilterScroll.querySelectorAll('.day-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      dayFilterScroll.querySelectorAll('.day-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeDayFilter = btn.getAttribute('data-filter');
+      renderAlarmsList();
+    });
+  });
 
-    // 2. Otherwise match today's scheduled weekday
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const currentDay = days[new Date().getDay()];
-    return userRoutes.find(r => r.type !== 'once' && r.day.toLowerCase() === currentDay.toLowerCase() && r.enabled) || null;
-  }
-
+  // ==========================================================================
+  // Today's Sentinel Runner (5-Minute Background Scan)
+  // ==========================================================================
   function initTodaySentinel() {
     const todayRoute = getTodayRoute();
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const currentDay = days[new Date().getDay()];
 
     if (todayRoute) {
-      sentinelDot.className = 'pulse-dot active';
-      const label = todayRoute.type === 'once' 
-        ? `⚡ Ring Once Active (${todayRoute.startTime} - ${todayRoute.endTime})` 
-        : `Today's Sentinel: ${todayRoute.day} (${todayRoute.startTime} - ${todayRoute.endTime})`;
+      if (heroPulseDot) heroPulseDot.className = 'pulse-dot active';
 
-      sentinelTitle.textContent = label;
-      sentinelSub.textContent = `${todayRoute.startLocation} ➔ ${todayRoute.endLocation} (${todayRoute.areas.length} areas on 5m scan)`;
-
-      // Start 5-min engine
       AlarmEngine.startBackgroundSentinel(
         () => getTodayRoute(),
         (log) => {
           if (log.hasRain) {
-            sentinelDot.className = 'pulse-dot alert';
-            sentinelSub.textContent = log.message;
+            if (heroPulseDot) heroPulseDot.className = 'pulse-dot alert';
+            renderTodayPickupCard(log.message, true);
           } else {
-            sentinelDot.className = 'pulse-dot active';
-            sentinelSub.textContent = `Checked at ${log.timestamp} • All ${todayRoute.areas.length} areas clear`;
+            if (heroPulseDot) heroPulseDot.className = 'pulse-dot active';
+            renderTodayPickupCard(`Checked at ${log.timestamp} • All ${todayRoute.areas.length} areas clear`, false);
           }
         }
       );
     } else {
-      sentinelDot.className = 'pulse-dot';
-      sentinelTitle.textContent = `No Active Alarm for ${currentDay}`;
-      sentinelSub.textContent = `Tap + to set a route or toggle Ring Once`;
+      if (heroPulseDot) heroPulseDot.className = 'pulse-dot';
       AlarmEngine.stopBackgroundSentinel();
+      renderTodayPickupCard();
     }
   }
 
-  // Quick Test Alarm Button
+  // ==========================================================================
+  // Quick Siren Audio Test Button
+  // ==========================================================================
   btnQuickTest.addEventListener('click', () => {
     AlarmEngine.initAudio();
     if ('Notification' in window && Notification.permission !== 'granted') {
@@ -462,54 +585,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const testRoute = getTodayRoute() || {
-      day: 'Friday',
       startLocation: 'Wimco Nagar',
       endLocation: 'Royapuram',
-      areas: [
-        'Wimco Nagar', 'Tiruvottiyur', 'Theradi', 'Tiruvottiyur Market', 
-        'Kaladipet', 'Rajakadai', 'Tollgate', 'Tondiarpet', 'Kasimedu', 
-        'Kalmandapam', 'Royapuram'
-      ]
+      areas: ['Wimco Nagar', 'Kaladipet', 'Tollgate', 'Kasimedu', 'Royapuram']
     };
 
-    // Demonstrates exact contiguous stretch alert:
-    // Rain from Wimco Nagar till Tollgate, and again from Kasimedu till Royapuram
-    const mockThreats = [
-      { name: 'Wimco Nagar', rainProb: 85, rainMm: 4.0 },
-      { name: 'Tiruvottiyur', rainProb: 80, rainMm: 3.5 },
-      { name: 'Theradi', rainProb: 85, rainMm: 4.2 },
-      { name: 'Kaladipet', rainProb: 75, rainMm: 3.0 },
-      { name: 'Tollgate', rainProb: 70, rainMm: 2.5 },
-      { name: 'Kasimedu', rainProb: 70, rainMm: 2.8 },
-      { name: 'Kalmandapam', rainProb: 75, rainMm: 3.2 },
-      { name: 'Royapuram', rainProb: 80, rainMm: 3.6 }
-    ];
+    const simulatedRainStops = testRoute.areas.length >= 3 
+      ? [testRoute.areas[0], testRoute.areas[1], testRoute.areas[testRoute.areas.length - 1]]
+      : testRoute.areas;
 
-    AlarmEngine.triggerAlarm(testRoute, mockThreats);
-  });
+    const message = AlarmEngine.formatContiguousRainStretches(testRoute, simulatedRainStops);
 
-  // Active Alarm Ringing Overlay Listeners
-  window.addEventListener('mazhai-alarm-triggered', (e) => {
-    alarmRingingOverlay.classList.add('active');
-    const { route, rainThreats, sentence } = e.detail;
-    const finalSentence = sentence || AlarmEngine.formatContiguousRainStretches(route.areas || [], rainThreats);
-    ringingDesc.innerHTML = `
-      <strong>${finalSentence}</strong> along your <strong>${route.day}</strong> route!<br>
-      Please take shelter, wear your raincoat, and protect your sales materials.
-    `;
-  });
-
-  window.addEventListener('mazhai-alarm-dismissed', () => {
-    alarmRingingOverlay.classList.remove('active');
+    AlarmEngine.triggerAlarm(message, () => {
+      ringingDesc.textContent = message;
+      alarmRingingOverlay.classList.add('active');
+    });
   });
 
   btnDismissAlarm.addEventListener('click', () => {
-    AlarmEngine.stopAlarm();
+    AlarmEngine.dismissAlarm();
+    alarmRingingOverlay.classList.remove('active');
   });
 
-  // ================= ADD ALARM MODAL FLOW =================
+  // ==========================================================================
+  // Add / Edit Route Alarm Modal Sheet
+  // ==========================================================================
+  function openAddModal() {
+    tempDetectedAreas = [];
+    startLocationInput.value = '';
+    endLocationInput.value = '';
+    customDetourInput.value = '';
+    areaChipsList.innerHTML = `<span class="placeholder-text">Click "Find Fastest Route" above to see all areas automatically.</span>`;
+    areaCountText.textContent = '0 areas';
+    typeWeeklyBtn.click();
+    addAlarmModal.classList.add('open');
+  }
 
-  // Schedule Type Buttons (Weekly Routine vs Ring Once)
+  function closeModal() {
+    addAlarmModal.classList.remove('open');
+  }
+
+  btnCloseModal.addEventListener('click', closeModal);
+  btnCancelModal.addEventListener('click', closeModal);
+
+  if (btnNavAddRoute) {
+    btnNavAddRoute.addEventListener('click', openAddModal);
+  }
+
+  // Schedule type toggle
   typeWeeklyBtn.addEventListener('click', () => {
     selectedScheduleType = 'weekly';
     typeWeeklyBtn.classList.add('active');
@@ -526,27 +649,6 @@ document.addEventListener('DOMContentLoaded', () => {
     onceInfoBanner.style.display = 'block';
   });
 
-  function openAddModal() {
-    tempDetectedAreas = [];
-    startLocationInput.value = '';
-    endLocationInput.value = '';
-    customDetourInput.value = '';
-    areaChipsList.innerHTML = `<span class="placeholder-text">Click "Find Fastest Route" above to see all areas automatically.</span>`;
-    areaCountText.textContent = '0 areas';
-    // Default to weekly
-    typeWeeklyBtn.click();
-    addAlarmModal.classList.add('open');
-  }
-
-  btnOpenAddModal.addEventListener('click', openAddModal);
-
-  function closeModal() {
-    addAlarmModal.classList.remove('open');
-  }
-
-  btnCloseModal.addEventListener('click', closeModal);
-  btnCancelModal.addEventListener('click', closeModal);
-
   // Day picker buttons
   dayPicker.querySelectorAll('.day-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -562,22 +664,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const end = endLocationInput.value.trim();
 
     if (!start || !end) {
-      alert('Please enter both start location and destination.');
+      alert('Please enter both your starting location and destination.');
       return;
     }
 
+    btnAnalyzeRoute.innerHTML = `<span>⏳</span> Calculating route corridor...`;
     btnAnalyzeRoute.disabled = true;
-    btnAnalyzeRoute.innerHTML = '<span>⏳</span> Calculating Fastest Route & Areas...';
 
     try {
-      const result = await RoutingEngine.analyzeRouteAreas(start, end);
-      tempDetectedAreas = result.areas.map(a => a.name);
+      const result = await TamilNaduRoutingEngine.getRouteAndIntermediateAreas(start, end);
+      tempDetectedAreas = result.areas;
       renderDetectedAreaChips();
     } catch (err) {
-      alert(err.message || 'Could not analyze route. Try entering standard Tamil Nadu areas (e.g. Adyar, Kelambakkam, Wimco Nagar).');
+      console.warn('Corridor detection failed:', err);
+      tempDetectedAreas = [start, end];
+      renderDetectedAreaChips();
     } finally {
+      btnAnalyzeRoute.innerHTML = `<span>⚡</span> Find Fastest Route & Auto-Detect Areas`;
       btnAnalyzeRoute.disabled = false;
-      btnAnalyzeRoute.innerHTML = '<span>⚡</span> Find Fastest Route & Auto-Detect Areas';
     }
   });
 
@@ -638,7 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const newRoute = {
       id: 'route_' + Date.now(),
-      type: selectedScheduleType, // 'weekly' or 'once'
+      type: selectedScheduleType,
       day: isOnce ? 'Today / On-Demand' : selectedDay,
       enabled: true,
       startTime: startTimeInput.value || '05:00',
@@ -648,7 +752,6 @@ document.addEventListener('DOMContentLoaded', () => {
       areas: [...tempDetectedAreas]
     };
 
-    // If weekly, replace same day; if once, prepend
     if (!isOnce) {
       userRoutes = userRoutes.filter(r => !(r.type !== 'once' && r.day.toLowerCase() === selectedDay.toLowerCase()));
     }
@@ -656,11 +759,188 @@ document.addEventListener('DOMContentLoaded', () => {
 
     AuthEngine.saveUserRoutes(currentUser.id, userRoutes);
     renderAlarmsList();
+    renderTodayPickupCard();
     initTodaySentinel();
     closeModal();
   });
 
+  // ==========================================================================
+  // Quick Area Search Bar with Live Popover (District Style)
+  // ==========================================================================
+  let searchTimeout = null;
+  quickAreaSearchInput.addEventListener('input', () => {
+    const query = quickAreaSearchInput.value.trim();
+    if (!query) {
+      searchResultsPopover.style.display = 'none';
+      btnClearSearch.style.display = 'none';
+      return;
+    }
+
+    btnClearSearch.style.display = 'block';
+    clearTimeout(searchTimeout);
+
+    searchTimeout = setTimeout(async () => {
+      const match = TamilNaduRoutingEngine.findKnownLocality(query);
+      if (match) {
+        searchResultsPopover.style.display = 'block';
+        searchResultAreaName.textContent = match.name;
+        searchResultStatusTag.className = 'search-status-tag';
+        searchResultStatusTag.textContent = 'Scanning...';
+        searchResultDesc.textContent = `Querying Open-Meteo precipitation models for ${match.name}...`;
+
+        try {
+          const forecast = await WeatherService.getPrecipitationForPoint(match.lat, match.lon);
+          const hasRain = forecast.precipitationSum > 0.05 || forecast.precipitationProbability > 20;
+
+          if (hasRain) {
+            searchResultStatusTag.className = 'search-status-tag rain';
+            searchResultStatusTag.textContent = `🌧️ Rain: ${forecast.precipitationProbability}%`;
+            searchResultDesc.textContent = `Precipitation detected (~${forecast.precipitationSum}mm). Expect rain showers in ${match.name}.`;
+          } else {
+            searchResultStatusTag.className = 'search-status-tag';
+            searchResultStatusTag.textContent = `☀️ Clear (${forecast.precipitationProbability}%)`;
+            searchResultDesc.textContent = `No rain predicted for ${match.name} currently. Good for travel.`;
+          }
+        } catch (err) {
+          searchResultDesc.textContent = `Weather check timed out. Coordinates: ${match.lat.toFixed(3)}, ${match.lon.toFixed(3)}.`;
+        }
+      } else {
+        searchResultsPopover.style.display = 'block';
+        searchResultAreaName.textContent = query;
+        searchResultStatusTag.className = 'search-status-tag';
+        searchResultStatusTag.textContent = 'Local Area';
+        searchResultDesc.textContent = `Tap "+ Add Route" to map ${query} into your daily sales path.`;
+      }
+    }, 350);
+  });
+
+  btnClearSearch.addEventListener('click', () => {
+    quickAreaSearchInput.value = '';
+    searchResultsPopover.style.display = 'none';
+    btnClearSearch.style.display = 'none';
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-bar-wrap')) {
+      searchResultsPopover.style.display = 'none';
+    }
+  });
+
+  // ==========================================================================
+  // Category Pills & Bottom Navigation Controller
+  // ==========================================================================
+  categoryPills.querySelectorAll('.cat-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      categoryPills.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      const tab = pill.getAttribute('data-tab');
+
+      if (tab === 'focus') {
+        weeklySection.style.display = 'flex';
+        radarSection.style.display = 'none';
+        todayPickupCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else if (tab === 'weekly') {
+        weeklySection.style.display = 'flex';
+        radarSection.style.display = 'none';
+        dayFilterScroll.querySelector('[data-filter="all"]').click();
+        weeklySection.scrollIntoView({ behavior: 'smooth' });
+      } else if (tab === 'once') {
+        weeklySection.style.display = 'flex';
+        radarSection.style.display = 'none';
+        dayFilterScroll.querySelector('[data-filter="once"]').click();
+        weeklySection.scrollIntoView({ behavior: 'smooth' });
+      } else if (tab === 'radar') {
+        weeklySection.style.display = 'none';
+        radarSection.style.display = 'flex';
+        loadTamilNaduRadarGrid();
+        radarSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+
+  bottomNavTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      bottomNavTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const target = tab.getAttribute('data-target');
+
+      if (target === 'home') {
+        weeklySection.style.display = 'flex';
+        radarSection.style.display = 'none';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (target === 'routes') {
+        weeklySection.style.display = 'flex';
+        radarSection.style.display = 'none';
+        weeklySection.scrollIntoView({ behavior: 'smooth' });
+      } else if (target === 'radar') {
+        weeklySection.style.display = 'none';
+        radarSection.style.display = 'flex';
+        loadTamilNaduRadarGrid();
+      } else if (target === 'settings') {
+        openSettings();
+      }
+    });
+  });
+
+  // ==========================================================================
+  // Tamil Nadu District Rain Radar
+  // ==========================================================================
+  const TN_HUBS = [
+    { name: 'Chennai (North)', lat: 13.150, lon: 80.290 },
+    { name: 'Chennai (South)', lat: 12.920, lon: 80.140 },
+    { name: 'Chengalpattu', lat: 12.682, lon: 79.983 },
+    { name: 'Kanchipuram', lat: 12.834, lon: 79.703 },
+    { name: 'Madurai', lat: 9.925, lon: 78.119 },
+    { name: 'Coimbatore', lat: 11.016, lon: 76.955 },
+    { name: 'Tiruchirappalli', lat: 10.790, lon: 78.704 },
+    { name: 'Salem', lat: 11.664, lon: 78.146 }
+  ];
+
+  async function loadTamilNaduRadarGrid() {
+    radarGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 24px; color: var(--text-muted);">Fetching live satellite radar data...</div>`;
+
+    try {
+      const cardsHtml = await Promise.all(TN_HUBS.map(async (hub) => {
+        try {
+          const res = await WeatherService.getPrecipitationForPoint(hub.lat, hub.lon);
+          const hasRain = res.precipitationSum > 0.05 || res.precipitationProbability > 25;
+          const badgeClass = hasRain ? 'radar-condition-badge rain' : 'radar-condition-badge clear';
+          const badgeText = hasRain ? '🌧️ Rain Alert' : '☀️ Clear';
+
+          return `
+            <div class="radar-card">
+              <div class="radar-card-header">
+                <span class="radar-district-name">${hub.name}</span>
+                <span class="${badgeClass}">${badgeText}</span>
+              </div>
+              <div class="radar-temp-stat">${res.precipitationProbability}%</div>
+              <div class="radar-sub-stat">Rain Probability &bull; ${res.precipitationSum}mm</div>
+            </div>
+          `;
+        } catch {
+          return `
+            <div class="radar-card">
+              <div class="radar-card-header">
+                <span class="radar-district-name">${hub.name}</span>
+                <span class="radar-condition-badge clear">Radar Online</span>
+              </div>
+              <div class="radar-sub-stat">Live data synchronizing</div>
+            </div>
+          `;
+        }
+      }));
+
+      radarGrid.innerHTML = cardsHtml.join('');
+    } catch (err) {
+      radarGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--danger);">Unable to connect to Open-Meteo satellite feed.</div>`;
+    }
+  }
+
+  btnRefreshRadar.addEventListener('click', loadTamilNaduRadarGrid);
+
+  // ==========================================================================
   // PWA Service Worker
+  // ==========================================================================
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').catch(() => {});

@@ -19,18 +19,22 @@
 </head>
 <body>
 
-  <!-- Mobile-First Alarm App Frame -->
+  <!-- Mobile-First Alarm App Frame (BookMyShow / District / PVR Structure) -->
   <div class="alarm-app-shell">
 
-    <!-- Top App Bar -->
+    <!-- Top App Bar (District / PVR Style with Location Context) -->
     <header class="app-bar">
-      <div class="brand">
-        <div class="brand-icon-badge">🌧️</div>
-        <div class="brand-text">
-          <h1>Mazhai<span>Alarm</span></h1>
-          <span class="sub-text">Field Sales Rain Guardian</span>
+      <div class="location-brand-block" id="btnLocationSelect" title="Base Location">
+        <div class="location-row">
+          <span class="location-pin-icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          </span>
+          <span class="location-city">Chennai</span>
+          <span class="location-region">Tamil Nadu ▾</span>
         </div>
+        <div class="brand-tagline">MazhaiAlarm &bull; Field Sales Guardian</div>
       </div>
+
       <div class="header-right">
         <!-- User Badge Button (opens settings) -->
         <button class="user-badge-btn" id="btnUserBadge" title="Account profile & settings">
@@ -39,43 +43,160 @@
         </button>
         <!-- Settings Button -->
         <button class="btn-settings-icon" id="btnOpenSettings" title="App Settings & Theme">
-          ⚙️
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
       </div>
     </header>
 
-    <!-- Today's Sentinel Status Banner -->
-    <div class="today-sentinel-banner" id="sentinelBanner">
-      <div class="sentinel-indicator">
-        <span class="pulse-dot active" id="sentinelDot"></span>
-        <div class="sentinel-details">
-          <div class="sentinel-title" id="sentinelTitle">Scanning Today's Route (Every 5 mins)</div>
-          <div class="sentinel-sub" id="sentinelSub">Adyar ➔ Kelambakkam &bull; All 10 areas clear</div>
-        </div>
+    <!-- Quick Search Bar (District Style) -->
+    <div class="search-bar-wrap">
+      <div class="search-bar-pill">
+        <span class="search-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </span>
+        <input type="text" id="quickAreaSearchInput" placeholder="Quick check area rain (e.g. Wimco Nagar, Kasimedu...)" aria-label="Search area rain status">
+        <button type="button" class="btn-clear-search" id="btnClearSearch" style="display:none;" title="Clear search">&times;</button>
       </div>
-      <button class="btn-quick-test" id="btnQuickTest" title="Test how the rain alarm sounds">
-        🔊 Test Alarm
+      <!-- Quick Search Results Floating Popover -->
+      <div class="search-results-popover" id="searchResultsPopover" style="display: none;">
+        <div class="search-results-header">
+          <span id="searchResultAreaName">Area</span>
+          <span class="search-status-tag" id="searchResultStatusTag">Checking...</span>
+        </div>
+        <div class="search-result-desc" id="searchResultDesc">Live rain forecast data loading...</div>
+      </div>
+    </div>
+
+    <!-- Category Filter Strip (District Style: For You, Routines, Ring Once, Radar) -->
+    <div class="category-pills-bar" id="categoryPills">
+      <button type="button" class="cat-pill active" data-tab="focus">
+        <span class="cat-icon">⭐</span>
+        <span>Today's Focus</span>
+      </button>
+      <button type="button" class="cat-pill" data-tab="weekly">
+        <span class="cat-icon">🔁</span>
+        <span>Weekly Routines</span>
+      </button>
+      <button type="button" class="cat-pill" data-tab="once">
+        <span class="cat-icon">⚡</span>
+        <span>Ring Once</span>
+      </button>
+      <button type="button" class="cat-pill" data-tab="radar">
+        <span class="cat-icon">🌧️</span>
+        <span>TN Radar</span>
       </button>
     </div>
 
-    <!-- Alarm List Section (Monday - Saturday Routes) -->
-    <main class="alarms-body">
-      <div class="section-title-row">
-        <h2>Weekly Route Alarms</h2>
-        <span class="route-count-badge" id="alarmCountBadge">1 Active</span>
+    <!-- Main Scrollable App Canvas -->
+    <main class="app-main-content">
+
+      <!-- Monsoon Hero Pulse Banner (BookMyShow / PVR Featured Card) -->
+      <div class="monsoon-hero-card">
+        <div class="hero-top-row">
+          <span class="hero-badge">🌧️ NE MONSOON RADAR</span>
+          <span class="hero-pulse-badge"><span class="pulse-dot active" id="heroPulseDot"></span> 5m Radar Live</span>
+        </div>
+        <div class="hero-headline">Tamil Nadu Route Sentinel</div>
+        <div class="hero-desc">Autonomous precipitation scans across your daily sales stops in Tamil Nadu.</div>
+        <div class="hero-action-row">
+          <button type="button" class="btn-test-siren" id="btnQuickTest" title="Test audio alarm siren">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            <span>Test Siren Alert</span>
+          </button>
+          <span class="hero-guarantee">Free Open-Meteo &bull; WakeLock</span>
+        </div>
       </div>
 
-      <!-- Alarms List Container -->
-      <div class="alarms-list" id="alarmsList">
-        <!-- Alarm cards dynamically generated here -->
-      </div>
+      <!-- Today's Journey Card (Exact BookMyShow "Pick up where you left off" Component) -->
+      <section class="today-pickup-card" id="todayPickupCard">
+        <!-- Dynamically populated by JS: either active today's journey or clean quick-add CTA -->
+      </section>
+
+      <!-- Weekly Route Alarms Section -->
+      <section class="section-container" id="weeklySection">
+        <div class="section-title-row">
+          <div>
+            <h2 class="section-heading">Weekly Sales Routines</h2>
+            <span class="section-subheading">Pre-configured Monday to Sunday routes</span>
+          </div>
+          <span class="route-count-badge" id="alarmCountBadge">0 Active</span>
+        </div>
+
+        <!-- Day Filter Scroll (District Category Style) -->
+        <div class="day-filter-scroll" id="dayFilterScroll">
+          <button type="button" class="day-filter-btn active" data-filter="all">All Days</button>
+          <button type="button" class="day-filter-btn" data-filter="Monday">Mon</button>
+          <button type="button" class="day-filter-btn" data-filter="Tuesday">Tue</button>
+          <button type="button" class="day-filter-btn" data-filter="Wednesday">Wed</button>
+          <button type="button" class="day-filter-btn" data-filter="Thursday">Thu</button>
+          <button type="button" class="day-filter-btn" data-filter="Friday">Fri</button>
+          <button type="button" class="day-filter-btn" data-filter="Saturday">Sat</button>
+          <button type="button" class="day-filter-btn" data-filter="Sunday">Sun</button>
+          <button type="button" class="day-filter-btn" data-filter="once">⚡ Ring Once</button>
+        </div>
+
+        <!-- Alarms List Container -->
+        <div class="alarms-list" id="alarmsList">
+          <!-- Route cards or empty state generated dynamically -->
+        </div>
+      </section>
+
+      <!-- Tamil Nadu Rain Radar Live Section -->
+      <section class="section-container" id="radarSection" style="display: none;">
+        <div class="section-title-row">
+          <div>
+            <h2 class="section-heading">Tamil Nadu District Radar</h2>
+            <span class="section-subheading">Live rainfall conditions across commercial hubs</span>
+          </div>
+          <button type="button" class="btn-refresh-radar" id="btnRefreshRadar" title="Refresh Live Radar">
+            🔄 Refresh
+          </button>
+        </div>
+        <div class="radar-grid" id="radarGrid">
+          <!-- District weather cards generated by JS -->
+        </div>
+      </section>
+
     </main>
 
-    <!-- Floating Action Button (FAB '+') in Bottom Right -->
-    <button class="fab-add-alarm" id="btnOpenAddModal" title="Set up new route alarm">
-      <span class="fab-icon">+</span>
-      <span>Add Route Alarm</span>
-    </button>
+    <!-- Fixed Bottom Navigation Bar (BookMyShow & PVR Signature Component) -->
+    <nav class="bottom-nav-bar">
+      <button type="button" class="nav-tab active" data-target="home">
+        <span class="nav-icon">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </span>
+        <span class="nav-label">Home</span>
+      </button>
+
+      <button type="button" class="nav-tab" data-target="routes">
+        <span class="nav-icon">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/></svg>
+        </span>
+        <span class="nav-label">Routes</span>
+      </button>
+
+      <!-- Center Highlighted Action Button (BookMyShow / Instagram Floating Pill) -->
+      <button type="button" class="nav-tab-center" id="btnNavAddRoute" title="Set up new route alarm">
+        <div class="center-btn-bubble">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span class="nav-label">Add Route</span>
+      </button>
+
+      <button type="button" class="nav-tab" data-target="radar">
+        <span class="nav-icon">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 6a6 6 0 0 1 6 6"/><circle cx="12" cy="12" r="2"/></svg>
+        </span>
+        <span class="nav-label">Radar</span>
+      </button>
+
+      <button type="button" class="nav-tab" data-target="settings">
+        <span class="nav-icon">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </span>
+        <span class="nav-label">Settings</span>
+      </button>
+    </nav>
 
   </div>
 
@@ -84,7 +205,7 @@
     <div class="alarm-sheet">
       <div class="sheet-header">
         <h3 id="modalTitle">Set Up Route Alarm</h3>
-        <button class="btn-close-modal" id="btnCloseModal">&times;</button>
+        <button class="btn-close-modal" id="btnCloseModal" title="Close">&times;</button>
       </div>
 
       <div class="sheet-body">
@@ -185,12 +306,12 @@
           <span style="font-size: 1.2rem;">⚙️</span>
           <h3>Settings</h3>
         </div>
-        <button class="btn-close-modal" id="btnCloseSettings">&times;</button>
+        <button class="btn-close-modal" id="btnCloseSettings" title="Close Settings">&times;</button>
       </div>
 
       <div class="sheet-body">
         
-        <!-- Appearance / Theme Section -->
+        <!-- Appearance / Theme Section with Ben 10 Upgrade / Symbiote Ripple -->
         <div class="settings-section">
           <div class="settings-section-header">
             <span class="settings-section-label">Appearance & Display</span>

@@ -1,6 +1,6 @@
 /* ==========================================================================
    MazhaiAlarm Design System
-   Inspired by BookMyShow, District & PVR (Clean Consumer App Aesthetic)
+   Inspired by BookMyShow, District & PVR (Classy Consumer App Aesthetic)
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -10,16 +10,16 @@
   --bg-page: #f8f9fc;
   --bg-surface: #ffffff;
   --bg-surface-secondary: #f1f4f9;
-  --bg-card: #ffffff;
+  --bg-surface-subtle: #f8fafc;
   --border-subtle: #e2e8f0;
-  --border-focus: #f43f5e;
+  --border-focus: #e11d48;
   
   /* Brand Accent: Crimson / Coral (BookMyShow / District signature) */
   --brand-primary: #e11d48;
   --brand-primary-hover: #be123c;
   --brand-primary-light: #fff1f2;
   --brand-primary-border: #fecdd3;
-  --brand-glow: rgba(225, 29, 72, 0.22);
+  --brand-glow: rgba(225, 29, 72, 0.2);
 
   /* Typography */
   --text-primary: #0f172a;
@@ -38,21 +38,23 @@
   --danger-border: #fecaca;
 
   /* Elevation */
-  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
-  --shadow-md: 0 4px 14px -2px rgba(15, 23, 42, 0.08);
-  --shadow-lg: 0 12px 28px -4px rgba(15, 23, 42, 0.12);
-  --radius-lg: 18px;
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 6px 18px -2px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 14px 32px -4px rgba(15, 23, 42, 0.12);
+  --radius-xl: 22px;
+  --radius-lg: 16px;
   --radius-md: 12px;
   --radius-sm: 8px;
 }
 
 /* Dark Mode Overrides */
 [data-theme="dark"] {
-  --bg-page: #0b0f19;
-  --bg-surface: #141b2a;
+  --bg-page: #090d16;
+  --bg-surface: #121826;
   --bg-surface-secondary: #1a2235;
-  --bg-card: #141b2a;
-  --border-subtle: #242e42;
+  --bg-surface-subtle: #151d2d;
+  --border-subtle: #222c40;
   --border-focus: #fb7185;
 
   --brand-primary: #f43f5e;
@@ -75,9 +77,10 @@
   --danger-bg: rgba(239, 68, 68, 0.12);
   --danger-border: rgba(239, 68, 68, 0.25);
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 14px 32px rgba(0, 0, 0, 0.55);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 36px rgba(0, 0, 0, 0.6);
 }
 
 * {
@@ -117,13 +120,13 @@ body {
 /* App Shell (Mobile First) */
 .alarm-app-shell {
   width: 100%;
-  max-width: 520px;
+  max-width: 480px;
   min-height: 100vh;
   background: var(--bg-page);
   display: flex;
   flex-direction: column;
   position: relative;
-  padding-bottom: 96px;
+  padding-bottom: 84px; /* Space for fixed bottom navigation bar */
 }
 
 @media (min-width: 600px) {
@@ -144,10 +147,10 @@ body {
 }
 
 /* ==========================================================================
-   Header Navigation
+   Top App Bar (District / PVR Location Style)
    ========================================================================== */
 .app-bar {
-  padding: 14px 18px;
+  padding: 12px 18px;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
@@ -156,73 +159,53 @@ body {
   position: sticky;
   top: 0;
   z-index: 50;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-xs);
 }
 
-.brand {
+.location-brand-block {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.location-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
 }
 
-.brand-icon-badge {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: var(--brand-primary-light);
-  border: 1px solid var(--brand-primary-border);
+.location-pin-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 19px;
   color: var(--brand-primary);
 }
 
-.brand-text h1 {
-  font-size: 1.12rem;
+.location-city {
+  font-size: 1.05rem;
   font-weight: 800;
   color: var(--text-primary);
-  letter-spacing: -0.02em;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  letter-spacing: -0.01em;
 }
 
-.brand-text h1 span {
+.location-region {
+  font-size: 0.76rem;
+  font-weight: 600;
   color: var(--brand-primary);
+  margin-left: 2px;
 }
 
-.sub-text {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  font-weight: 500;
+.brand-tagline {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 1px;
 }
 
 .header-right {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.btn-settings-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--bg-surface-secondary);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-primary);
-  font-size: 1.05rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-settings-icon:hover {
-  background: var(--bg-surface);
-  border-color: var(--brand-primary-border);
-  transform: rotate(25deg);
 }
 
 .user-badge-btn {
@@ -235,165 +218,494 @@ body {
   border-radius: 20px;
   cursor: pointer;
   font-size: 0.76rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
+  transition: all 0.15s;
+}
+
+.user-badge-btn:hover {
+  background: var(--bg-surface);
+  border-color: var(--border-focus);
 }
 
 .user-avatar-circle {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--brand-primary);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 
+.btn-settings-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-settings-icon:hover {
+  background: var(--bg-surface);
+  color: var(--brand-primary);
+  border-color: var(--brand-primary-border);
+  transform: rotate(25deg);
+}
+
 /* ==========================================================================
-   Sentinel Banner (Live Status)
+   Quick Search Bar (District Style)
    ========================================================================== */
-.today-sentinel-banner {
-  margin: 14px 16px 4px;
+.search-bar-wrap {
+  padding: 10px 16px 6px;
+  background: var(--bg-surface);
+  position: relative;
+}
+
+.search-bar-pill {
+  display: flex;
+  align-items: center;
+  background: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 24px;
+  padding: 8px 14px;
+  gap: 9px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-bar-pill:focus-within {
+  border-color: var(--border-focus);
+  background: var(--bg-surface);
+  box-shadow: 0 0 0 3px var(--brand-primary-light);
+}
+
+.search-icon {
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+}
+
+.search-bar-pill input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.search-bar-pill input::placeholder {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.btn-clear-search {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.search-results-popover {
+  position: absolute;
+  top: 100%;
+  left: 16px;
+  right: 16px;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 13px 15px;
+  padding: 12px 14px;
+  box-shadow: var(--shadow-lg);
+  z-index: 40;
+  margin-top: 4px;
+}
+
+.search-results-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  box-shadow: var(--shadow-sm);
-  min-width: 0;
+  font-weight: 800;
+  font-size: 0.88rem;
+  margin-bottom: 4px;
 }
 
-.sentinel-indicator {
+.search-status-tag {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success-border);
+}
+
+.search-status-tag.rain {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border-color: var(--danger-border);
+}
+
+.search-result-desc {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   Category Filter Strip (District Horizontal Chips)
+   ========================================================================== */
+.category-pills-bar {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  flex: 1 1 0%;
-  min-width: 0;
-  overflow: hidden;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
-.sentinel-details {
-  flex: 1 1 0%;
-  min-width: 0;
-  overflow: hidden;
+.category-pills-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.cat-pill {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cat-pill:hover {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.cat-pill.active {
+  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: #ffffff;
+  box-shadow: 0 2px 8px var(--brand-glow);
+}
+
+.cat-icon {
+  font-size: 0.85rem;
+}
+
+/* ==========================================================================
+   Main App Content
+   ========================================================================== */
+.app-main-content {
+  padding: 14px 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 16px;
+}
+
+/* ==========================================================================
+   Monsoon Hero Pulse Banner (BookMyShow / PVR Style)
+   ========================================================================== */
+.monsoon-hero-card {
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.05) 0%, rgba(5, 150, 105, 0.06) 100%), var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .monsoon-hero-card {
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.1) 0%, rgba(16, 185, 129, 0.08) 100%), var(--bg-surface);
+}
+
+.hero-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hero-badge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--brand-primary);
+  background: var(--brand-primary-light);
+  border: 1px solid var(--brand-primary-border);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.hero-pulse-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--success);
 }
 
 .pulse-dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--text-muted);
   flex-shrink: 0;
-  margin-top: 4px;
 }
 
 .pulse-dot.active {
   background: var(--success);
-  box-shadow: 0 0 10px var(--success);
+  box-shadow: 0 0 8px var(--success);
   animation: pulseSuccess 2s infinite;
 }
 
 .pulse-dot.alert {
   background: var(--danger);
-  box-shadow: 0 0 12px var(--danger);
+  box-shadow: 0 0 10px var(--danger);
   animation: pulseDanger 0.8s infinite;
 }
 
 @keyframes pulseSuccess {
   0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-  70% { transform: scale(1.15); box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
+  70% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 
 @keyframes pulseDanger {
   0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.8); }
-  70% { transform: scale(1.25); box-shadow: 0 0 0 9px rgba(225, 29, 72, 0); }
+  70% { transform: scale(1.25); box-shadow: 0 0 0 8px rgba(225, 29, 72, 0); }
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); }
 }
 
-.sentinel-title {
-  font-size: 0.86rem;
+.hero-headline {
+  font-size: 1.05rem;
   font-weight: 800;
   color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 
-.sentinel-sub {
-  font-size: 0.73rem;
+.hero-desc {
+  font-size: 0.76rem;
   color: var(--text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.35;
-  margin-top: 1px;
+  line-height: 1.4;
 }
 
-.btn-quick-test {
-  flex-shrink: 0;
-  background: var(--brand-primary-light);
-  border: 1px solid var(--brand-primary-border);
+.hero-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.btn-test-siren {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   color: var(--brand-primary);
-  padding: 7px 13px;
+  padding: 6px 12px;
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 800;
   cursor: pointer;
-  white-space: nowrap;
+  box-shadow: var(--shadow-xs);
   transition: all 0.15s;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.btn-quick-test:hover {
+.btn-test-siren:hover {
   background: var(--brand-primary);
-  color: #fff;
+  border-color: var(--brand-primary);
+  color: #ffffff;
 }
 
-[data-theme="dark"] .btn-quick-test {
-  background: rgba(244, 63, 94, 0.18);
-  border-color: rgba(244, 63, 94, 0.45);
-  color: #fda4af;
-}
-
-[data-theme="dark"] .btn-quick-test:hover {
-  background: var(--brand-primary);
-  color: #fff;
+.hero-guarantee {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
 }
 
 /* ==========================================================================
-   Alarms List & Cards (BookMyShow / District Ticket Style)
+   Today's Journey Card (BookMyShow "Pick up where you left off" Component)
    ========================================================================== */
-.alarms-body {
-  padding: 16px;
+.today-pickup-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.pickup-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.pickup-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pickup-tag {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--brand-primary);
+}
+
+.pickup-route-name {
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.pickup-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pickup-time-pill {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.pickup-status-chip {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 12px;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success);
+}
+
+.pickup-status-chip.rain {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+  color: var(--danger);
+  animation: pulseDanger 1.2s infinite;
+}
+
+.pickup-stops-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.pickup-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.mini-area-chip {
+  background: var(--bg-surface-secondary);
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-pickup-cta {
+  background: var(--brand-primary);
+  color: #ffffff;
+  border: none;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 4px 14px var(--brand-glow);
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.btn-pickup-cta:hover {
+  background: var(--brand-primary-hover);
+}
+
+.btn-pickup-cta:active {
+  transform: scale(0.98);
+}
+
+.pickup-empty-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   Section Containers
+   ========================================================================== */
+.section-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .section-title-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   padding: 0 2px;
 }
 
-.section-title-row h2 {
-  font-size: 0.86rem;
+.section-heading {
+  font-size: 0.92rem;
   font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-secondary);
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.section-subheading {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 1px;
 }
 
 .route-count-badge {
@@ -406,90 +718,60 @@ body {
   font-weight: 700;
 }
 
-.alarms-list {
+/* Day Filter Horizontal Scroll */
+.day-filter-scroll {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* ==========================================================================
-   Empty Alarms State (BookMyShow / District Style)
-   ========================================================================== */
-.empty-alarms-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 44px 20px;
-  gap: 10px;
-  background: var(--bg-surface);
-  border: 1px dashed var(--border-subtle);
-  border-radius: var(--radius-lg);
-  margin-top: 8px;
-  box-shadow: var(--shadow-sm);
-}
-
-.empty-alarm-icon {
-  font-size: 2.6rem;
-  line-height: 1;
-  margin-bottom: 4px;
-}
-
-.empty-alarm-title {
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--text-primary);
-}
-
-.empty-alarm-desc {
-  font-size: 0.78rem;
-  color: var(--text-secondary);
-  line-height: 1.45;
-  max-width: 290px;
-}
-
-.btn-empty-add-route {
-  margin-top: 6px;
-  background: var(--brand-primary-light);
-  border: 1.5px solid var(--brand-primary-border);
-  color: var(--brand-primary);
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 800;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
   gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.day-filter-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.day-filter-btn {
+  flex-shrink: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
   transition: all 0.15s;
 }
 
-.btn-empty-add-route:hover {
-  background: var(--brand-primary);
-  color: #fff;
+.day-filter-btn:hover {
+  border-color: var(--border-focus);
 }
 
-[data-theme="dark"] .btn-empty-add-route {
-  background: rgba(244, 63, 94, 0.16);
-  border-color: rgba(244, 63, 94, 0.45);
-  color: #fda4af;
+.day-filter-btn.active {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  color: var(--bg-page);
+  box-shadow: var(--shadow-xs);
 }
 
-[data-theme="dark"] .btn-empty-add-route:hover {
-  background: var(--brand-primary);
-  color: #fff;
+/* ==========================================================================
+   Alarms List & Cards (PVR Ticket Aesthetic)
+   ========================================================================== */
+.alarms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-/* Card */
 .alarm-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  padding: 16px 18px;
+  border-radius: var(--radius-md);
+  padding: 15px 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 11px;
   box-shadow: var(--shadow-sm);
   transition: all 0.2s ease;
   position: relative;
@@ -516,7 +798,7 @@ body {
 
 .alarm-day-badge {
   display: inline-block;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 800;
   color: var(--brand-primary);
   background: var(--brand-primary-light);
@@ -541,10 +823,9 @@ body {
 }
 
 .alarm-route-title {
-  font-size: 1.08rem;
+  font-size: 1.02rem;
   font-weight: 800;
   color: var(--text-primary);
-  letter-spacing: -0.01em;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -556,7 +837,7 @@ body {
 }
 
 .alarm-time-window {
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   color: var(--text-secondary);
   margin-top: 3px;
   font-weight: 500;
@@ -624,16 +905,6 @@ input:checked + .slider:before { transform: translateX(20px); }
   gap: 5px;
 }
 
-.mini-area-chip {
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 8px;
-  border: 1px solid var(--border-subtle);
-}
-
 .alarm-card-actions {
   display: flex;
   justify-content: flex-end;
@@ -661,47 +932,244 @@ input:checked + .slider:before { transform: translateX(20px); }
 }
 
 /* ==========================================================================
-   Floating Action Button (BookMyShow / District Style)
+   Empty Alarms State (BookMyShow / District Style)
    ========================================================================== */
-.fab-add-alarm {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  height: 52px;
-  padding: 0 22px;
-  border-radius: 26px;
-  background: var(--brand-primary);
-  color: #ffffff;
-  border: none;
-  font-size: 0.95rem;
-  font-weight: 800;
+.empty-alarms-state {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  box-shadow: 0 10px 25px var(--brand-glow);
-  cursor: pointer;
-  z-index: 100;
-  transition: transform 0.15s ease, background-color 0.15s ease;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+  gap: 10px;
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-lg);
+  margin-top: 4px;
 }
 
-.fab-add-alarm:hover {
+.empty-alarm-icon {
+  font-size: 2.6rem;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.empty-alarm-title {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.empty-alarm-desc {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  max-width: 290px;
+}
+
+.btn-empty-add-route {
+  margin-top: 6px;
+  background: var(--brand-primary-light);
+  border: 1.5px solid var(--brand-primary-border);
+  color: var(--brand-primary);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+
+.btn-empty-add-route:hover {
+  background: var(--brand-primary);
+  color: #fff;
+}
+
+[data-theme="dark"] .btn-empty-add-route {
+  background: rgba(244, 63, 94, 0.16);
+  border-color: rgba(244, 63, 94, 0.45);
+  color: #fda4af;
+}
+
+/* ==========================================================================
+   Tamil Nadu Rain Radar Grid
+   ========================================================================== */
+.radar-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.radar-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: var(--shadow-xs);
+}
+
+.radar-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.radar-district-name {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.radar-condition-badge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+.radar-condition-badge.clear {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.radar-condition-badge.rain {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.radar-temp-stat {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+
+.radar-sub-stat {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.btn-refresh-radar {
+  background: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   Fixed Bottom Navigation Bar (BookMyShow / PVR Style)
+   ========================================================================== */
+.bottom-nav-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .bottom-nav-bar {
+  background: rgba(18, 24, 38, 0.94);
+  border-top-color: #222c40;
+  box-shadow: 0 -2px 14px rgba(0, 0, 0, 0.4);
+}
+
+@media (min-width: 600px) {
+  .bottom-nav-bar {
+    max-width: 480px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 0 0 28px 28px;
+  }
+}
+
+.nav-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px 0;
+  transition: color 0.15s;
+}
+
+.nav-tab.active {
+  color: var(--brand-primary);
+}
+
+.nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+/* Center Prominent Add Button */
+.nav-tab-center {
+  flex: 1;
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  top: -12px;
+}
+
+.center-btn-bubble {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--brand-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px var(--brand-glow);
+  transition: transform 0.15s, background-color 0.15s;
+}
+
+.nav-tab-center:hover .center-btn-bubble {
   background: var(--brand-primary-hover);
   transform: translateY(-2px);
 }
 
-.fab-add-alarm:active {
-  transform: scale(0.96);
+.nav-tab-center:active .center-btn-bubble {
+  transform: scale(0.94);
 }
 
-.fab-icon {
-  font-size: 1.3rem;
-  line-height: 1;
-}
-
-@media (min-width: 600px) {
-  .fab-add-alarm {
-    right: calc(50% - 260px + 24px);
-  }
+.nav-tab-center .nav-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--brand-primary);
+  margin-top: 3px;
 }
 
 /* ==========================================================================
@@ -733,7 +1201,7 @@ input:checked + .slider:before { transform: translateX(20px); }
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   width: 100%;
-  max-width: 500px;
+  max-width: 480px;
   max-height: 90vh;
   border-radius: 24px 24px 0 0;
   display: flex;
@@ -1005,7 +1473,7 @@ input:checked + .slider:before { transform: translateX(20px); }
   display: flex;
   align-items: center;
   gap: 6px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-xs);
 }
 
 .area-chip-removable button {
