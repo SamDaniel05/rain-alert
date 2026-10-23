@@ -1,53 +1,60 @@
 # MazhaiAlarm (மழை அலாரம்) 🌧️⏰
-### Smart Rain & Route Alarm for Field Sales in Tamil Nadu
+### Continuous 5-Minute Route Rain Sentinel & Alarms for Field Sales in Tamil Nadu
 
-A modern, responsive, 100% free web app and installable PWA designed specifically for sales reps and commuters who travel across multiple corridors in Tamil Nadu (Chennai, Coimbatore, Madurai, etc.) during the Northeast Monsoon season.
+A modern, responsive, 100% free web app and installable PWA designed specifically for sales professionals and commuters who cover 10+ areas daily across Tamil Nadu (Chennai, Coimbatore, Madurai, etc.) during the Northeast Monsoon season.
 
 ---
 
 ## 🌟 Key Features
 
-1. **Daily Sales Route & Detour Planner**
-   - Pre-configured corridors for Tamil Nadu (Wimco Nagar, Adyar, Kelambakkam, Sholinganallur, Pallikaranai, Kovalam, etc.).
-   - Calculate road routes via Open Source Routing Machine (OSRM).
-   - Easily add, reorder, or remove intermediate stops/detours.
+1. **Continuous 5-Minute Route Rain Sentinel**
+   - When heading out for field visits, tap **"Start Shift"**.
+   - MazhaiAlarm continuously polls weather along your remaining stops **every 5 minutes** (or 3m / 10m).
+   - Shows live countdown to the next radar scan (`Next scan in: 04:32`).
+   - Uses **Screen Wake Lock API** to keep the phone screen awake on bike/car mounts while traveling.
 
-2. **Arrival-Time Rain Forecasting**
-   - Rather than just current weather, MazhaiAlarm predicts rain **at the exact estimated time of arrival** at each stop.
-   - Integrates with Open-Meteo API (ECMWF & global models) for precipitation probability, rain volume (mm), and thunderstorm risk.
+2. **Dynamic Alarm, Vibration & Voice Advisory**
+   - If sudden rain develops or rain probability exceeds your threshold (default 35%), it triggers:
+     - 🔊 **Offline Sound Alarm**: Synthesized siren or pleasant chime via Web Audio API.
+     - 📳 **Vibration**: Mobile haptic pulse alert.
+     - 🗣️ **Voice Speech Announcement**: "Attention! Rain detected on your route around Pallikaranai. Rain probability is 75 percent. Please take shelter or put on rain gear."
+     - 📱 **System Push Notification**.
 
-3. **Smart Morning Rain Alarms**
-   - Wake-up or pre-departure alarm (e.g. 06:50, 07:15, 07:45 AM).
-   - Rings with synthesized audio chords or heavy rain sirens.
-   - Uses Web Speech synthesis to verbally announce the rain risk and gear recommendations before leaving home.
+3. **Daily Route & Detour Planner with Visited Checklist**
+   - Origin: Wimco Nagar (Home Base), Destination: Kelambakkam.
+   - Add/remove unlimited intermediate sales stops (e.g. Adyar, Pallikaranai, Kovalam, Sholinganallur).
+   - Check off stops as **"Visited"** as you complete sales meetings. The 5-minute sentinel automatically focuses on the remaining unvisited stops ahead of you.
 
-4. **Live GPS Quick Check**
-   - Instant 1-tap check of current weather, temperature, humidity, and a 24-hour precipitation probability chart.
+4. **Arrival-Time Rain Forecasting**
+   - Powered by **Open-Meteo API** (ECMWF & global high-resolution models).
+   - Predicts precipitation probability (%), rain intensity (mm), and thunderstorm risk at your estimated arrival time at each stop.
 
-5. **Desktop & Mobile Simulator Mode**
-   - Toggle between responsive wide view and a simulated smartphone frame for rapid desktop development and testing.
+5. **Responsive Design for Mobile & Desktop**
+   - **Mobile**: Native app interface with top sticky Sentinel status bar and thumb-friendly bottom navigation bar.
+   - **Desktop**: Dual-pane layout (Left: Route & Controls; Right: Interactive Leaflet Map with rain radar circles).
+   - Includes a **Desktop Mobile Simulator Toggle** button for rapid mobile testing in your desktop browser.
 
-6. **100% Free Architecture**
-   - **Weather**: Open-Meteo API (No API keys or costs).
-   - **Routing**: OSRM (Open Source Routing Machine).
+6. **100% Free Architecture (Zero Paid APIs)**
+   - **Weather**: Open-Meteo API (No API keys or credit card needed).
+   - **Routing**: Open Source Routing Machine (OSRM).
    - **Geocoding**: OpenStreetMap Nominatim.
-   - **Maps**: Leaflet.js with OSM tiles.
-   - **Sound & Speech**: Native Web Audio & Speech APIs.
+   - **Map**: Leaflet.js with OSM tiles.
+   - **Sound & Speech**: Native Web Audio & Web Speech APIs.
 
 ---
 
 ## 📱 How to Build an Android App Bundle (.aab) for Google Play Store
 
-Because MazhaiAlarm is built with a standard PWA manifest (`manifest.json`) and service worker (`sw.js`), you can package it into an `.aab` for the Play Store using either **Bubblewrap (TWA)** or **Capacitor**.
+MazhaiAlarm is configured as a Progressive Web App (PWA) with `manifest.json` and `sw.js`. You can package it into a production `.aab` for the Google Play Store using either **Bubblewrap (Google's official CLI)** or **Capacitor**.
 
-### Method 1: Using Bubblewrap (Google's Official PWA to AAB CLI)
+### Method 1: Google Bubblewrap (Fastest & Easiest)
 
 1. **Install Bubblewrap CLI**:
    ```bash
    npm i -g @bubblewrap/cli
    ```
 
-2. **Initialize from your live GitHub Pages URL**:
+2. **Initialize directly from your live GitHub Pages URL**:
    ```bash
    bubblewrap init --manifest="https://samdaniel05.github.io/rain-alert/manifest.json"
    ```
@@ -56,13 +63,13 @@ Because MazhaiAlarm is built with a standard PWA manifest (`manifest.json`) and 
    ```bash
    bubblewrap build
    ```
-   This will generate a signed `app-release-bundle.aab` ready for upload to the Google Play Console!
+   This generates an `app-release-bundle.aab` ready for upload to the **Google Play Console**!
 
 ---
 
-### Method 2: Using Capacitor
+### Method 2: Capacitor
 
-1. In the project directory:
+1. In the project folder:
    ```bash
    npm init -y
    npm install @capacitor/core @capacitor/cli @capacitor/android
@@ -70,4 +77,4 @@ Because MazhaiAlarm is built with a standard PWA manifest (`manifest.json`) and 
    npx cap add android
    npx cap open android
    ```
-2. In Android Studio, go to **Build > Generate Signed Bundle / APK > Android App Bundle (.aab)**.
+2. In Android Studio, select **Build > Generate Signed Bundle / APK > Android App Bundle (.aab)**.

@@ -2,32 +2,42 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Application State
   const state = {
+    origin: { name: 'Wimco Nagar (Home Base)', lat: 13.1706, lon: 80.3021 },
+    destination: { name: 'Kelambakkam (Final Stop)', lat: 12.7845, lon: 80.2208 },
     stops: [
-      { name: 'Adyar (Sales Start)', lat: 13.0012, lon: 80.2565 },
-      { name: 'Pallikaranai (Detour Stop)', lat: 12.9348, lon: 80.2137 },
-      { name: 'Kovalam (Detour Stop)', lat: 12.7925, lon: 80.2514 },
-      { name: 'Kelambakkam (Final Stop)', lat: 12.7845, lon: 80.2208 }
+      { id: 'stop-1', name: 'Adyar', lat: 13.0012, lon: 80.2565, visited: false },
+      { id: 'stop-2', name: 'Pallikaranai (Marshland Corridor)', lat: 12.9348, lon: 80.2137, visited: false },
+      { id: 'stop-3', name: 'Sholinganallur (OMR Junction)', lat: 12.9010, lon: 80.2279, visited: false },
+      { id: 'stop-4', name: 'Kovalam (ECR Coast)', lat: 12.7925, lon: 80.2514, visited: false }
     ],
+    isMonitoring: false,
+    nextCheckSeconds: 300, // 5 mins in seconds
+    countdownInterval: null,
     currentRoute: null,
     weatherResults: null,
-    alarm: {
-      enabled: true,
-      time: '07:15',
-      voice: true,
-      tone: 'chime'
-    },
-    liveCoords: { lat: 13.0012, lon: 80.2565 }, // Default Adyar
+    liveCoords: { lat: 13.0012, lon: 80.2565 },
     map: null,
     mapLayers: {
       routeLine: null,
-      markers: []
+      markers: [],
+      radarCircles: []
     },
     rainChart: null,
     tutorialStep: 0
   };
 
   // DOM Elements
+  const sentinelBar = document.getElementById('sentinelBar');
+  const statusPulse = document.getElementById('statusPulse');
+  const sentinelStatusTitle = document.getElementById('sentinelStatusTitle');
+  const sentinelCountdown = document.getElementById('sentinelCountdown');
+  const btnToggleMonitoring = document.getElementById('btnToggleMonitoring');
+  const sentinelBtnIcon = document.getElementById('sentinelBtnIcon');
+  const sentinelBtnText = document.getElementById('sentinelBtnText');
+  const btnShiftAction = document.getElementById('btnShiftAction');
+
   const stopsContainer = document.getElementById('stopsContainer');
+  const stopCount = document.getElementById('stopCount');
   const newStopInput = document.getElementById('newStopInput');
   const btnAddStop = document.getElementById('btnAddStop');
   const searchDropdown = document.getElementById('searchDropdown');
@@ -39,12 +49,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const bannerText = document.getElementById('bannerText');
   const routeDistancePill = document.getElementById('routeDistancePill');
 
-  const alarmToggle = document.getElementById('alarmToggle');
-  const alarmTimeInput = document.getElementById('alarmTimeInput');
-  const voiceToggle = document.getElementById('voiceToggle');
+  const pollIntervalSelect = document.getElementById('pollIntervalSelect');
+  const rainSensitivitySelect = document.getElementById('rainSensitivitySelect');
   const alarmToneSelect = document.getElementById('alarmToneSelect');
+  const voiceToggle = document.getElementById('voiceToggle');
+  const wakeLockToggle = document.getElementById('wakeLockToggle');
   const btnTestAlarm = document.getElementById('btnTestAlarm');
-  const alarmStatusLog = document.getElementById('alarmStatusLog');
+  const sentinelLogBox = document.getElementById('sentinelLogBox');
+
+  const alarmOverlay = document.getElementById('alarmOverlay');
+  const alarmModalDesc = document.getElementById('alarmModalDesc');
+  const btnDismissAlarm = document.getElementById('btnDismissAlarm');
 
   const btnLiveGps = document.getElementById('btnLiveGps');
   const btnRefreshLive = document.getElementById('btnRefreshLive');
@@ -57,44 +72,56 @@ document.addEventListener('DOMContentLoaded', () => {
   const liveLocationTitle = document.getElementById('liveLocationTitle');
 
   const btnToggleSim = document.getElementById('btnToggleSim');
-  const appContainer = document.getElementById('appContainer');
+  const appLayout = document.getElementById('appLayout');
   const btnHelpTutorial = document.getElementById('btnHelpTutorial');
   const tutorialModal = document.getElementById('tutorialModal');
   const btnNextTut = document.getElementById('btnNextTut');
   const btnSkipTut = document.getElementById('btnSkipTut');
 
-  // Load Saved State
+  // Load Saved Configuration
   function loadPersistedState() {
     try {
-      const savedStops = localStorage.getItem('mazhai_stops');
+      const savedStops = localStorage.getItem('mazhai_stops_v2');
       if (savedStops) state.stops = JSON.parse(savedStops);
 
-      const savedAlarm = localStorage.getItem('mazhai_alarm');
-      if (savedAlarm) {
-        state.alarm = JSON.parse(savedAlarm);
-        alarmToggle.checked = state.alarm.enabled;
-        alarmTimeInput.value = state.alarm.time;
-        voiceToggle.checked = state.alarm.voice;
-        alarmToneSelect.value = state.alarm.tone;
+      const savedSettings = localStorage.getItem('mazhai_sentinel_settings');
+      if (savedSettings) {
+        const s = JSON.parse(savedSettings);
+        AlarmEngine.config.intervalMinutes = s.intervalMinutes || 5;
+        AlarmEngine.config.rainThresholdProb = s.rainThresholdProb || 35;
+        AlarmEngine.config.tone = s.tone || 'siren';
+        AlarmEngine.config.voiceEnabled = s.voiceEnabled !== false;
+        AlarmEngine.config.keepScreenAwake = s.keepScreenAwake !== false;
+
+        pollIntervalSelect.value = String(AlarmEngine.config.intervalMinutes);
+        rainSensitivitySelect.value = String(AlarmEngine.config.rainThresholdProb);
+        alarmToneSelect.value = AlarmEngine.config.tone;
+        voiceToggle.checked = AlarmEngine.config.voiceEnabled;
+        wakeLockToggle.checked = AlarmEngine.config.keepScreenAwake;
       }
     } catch (e) {
-      console.warn('Could not load stored state:', e);
+      console.warn('Storage read failed:', e);
     }
   }
 
-  function persistState() {
+  function persistSettings() {
     try {
-      localStorage.setItem('mazhai_stops', JSON.stringify(state.stops));
-      localStorage.setItem('mazhai_alarm', JSON.stringify(state.alarm));
-    } catch (e) {
-      console.warn('Storage save failed:', e);
-    }
+      localStorage.setItem('mazhai_stops_v2', JSON.stringify(state.stops));
+      const s = {
+        intervalMinutes: AlarmEngine.config.intervalMinutes,
+        rainThresholdProb: AlarmEngine.config.rainThresholdProb,
+        tone: AlarmEngine.config.tone,
+        voiceEnabled: AlarmEngine.config.voiceEnabled,
+        keepScreenAwake: AlarmEngine.config.keepScreenAwake
+      };
+      localStorage.setItem('mazhai_sentinel_settings', JSON.stringify(s));
+    } catch (e) {}
   }
 
-  // Initialize Map
+  // Leaflet Map Initialization
   function initMap() {
     if (state.map) return;
-    const center = [12.90, 80.22]; // South Chennai / OMR corridor
+    const center = [12.92, 80.22]; // Chennai South / OMR Corridor
     state.map = L.map('routeMap', {
       zoomControl: true,
       attributionControl: false
@@ -105,47 +132,81 @@ document.addEventListener('DOMContentLoaded', () => {
     }).addTo(state.map);
   }
 
-  // Render Detours / Intermediate Stops
+  // Get ordered active stops for route calculation
+  function getFullRouteStops() {
+    const list = [state.origin];
+    state.stops.forEach(s => list.push(s));
+    list.push(state.destination);
+    return list;
+  }
+
+  // Get only remaining unvisited stops for the 5-min rain monitor
+  function getRemainingUnvisitedStops() {
+    const remaining = [];
+    state.stops.forEach(s => {
+      if (!s.visited) remaining.push(s);
+    });
+    // Always keep destination on watch if not all stops are done
+    remaining.push(state.destination);
+    return remaining;
+  }
+
+  // Render Intermediate Stops with "Visited" Checkboxes
   function renderStopsList() {
     stopsContainer.innerHTML = '';
-    
-    // We treat index 0 as Start, last as End, middle as detours
-    if (state.stops.length <= 2) {
+    const unvisitedCount = state.stops.filter(s => !s.visited).length;
+    stopCount.textContent = unvisitedCount;
+
+    if (state.stops.length === 0) {
       stopsContainer.innerHTML = `
         <div style="font-size: 0.8rem; color: #64748b; padding: 4px;">
-          Direct route selected. Click "Add Stop" below if you are making extra sales visits!
+          Direct route. Add your sales stops or detours below!
         </div>
       `;
       return;
     }
 
-    // Render middle stops
-    for (let i = 1; i < state.stops.length - 1; i++) {
-      const stop = state.stops[i];
-      const chip = document.createElement('div');
-      chip.className = 'stop-chip';
-      chip.innerHTML = `
-        <div class="stop-info">
-          <span style="color: var(--accent-cyan); font-weight: 700;">Stop ${i}:</span>
-          <span>${stop.name}</span>
+    state.stops.forEach((stop, index) => {
+      const item = document.createElement('div');
+      item.className = `stop-item ${stop.visited ? 'visited' : ''}`;
+      item.innerHTML = `
+        <div class="stop-left">
+          <input type="checkbox" class="check-visited" data-id="${stop.id}" ${stop.visited ? 'checked' : ''} title="Mark as visited">
+          <span><strong>Stop ${index + 1}:</strong> ${stop.name}</span>
         </div>
-        <button class="btn-remove-stop" data-idx="${i}" title="Remove this stop">&times;</button>
+        <button class="btn-remove-stop" data-id="${stop.id}" title="Remove stop">&times;</button>
       `;
-      stopsContainer.appendChild(chip);
-    }
+      stopsContainer.appendChild(item);
+    });
 
-    // Attach remove handlers
+    // Handle check visited
+    stopsContainer.querySelectorAll('.check-visited').forEach(chk => {
+      chk.addEventListener('change', (e) => {
+        const id = e.target.getAttribute('data-id');
+        const st = state.stops.find(s => s.id === id);
+        if (st) {
+          st.visited = e.target.checked;
+          persistSettings();
+          renderStopsList();
+          // Update map and recalculate remaining
+          performRouteScan(false);
+        }
+      });
+    });
+
+    // Handle delete stop
     stopsContainer.querySelectorAll('.btn-remove-stop').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const idx = parseInt(e.target.getAttribute('data-idx'));
-        state.stops.splice(idx, 1);
-        persistState();
+        const id = e.target.getAttribute('data-id');
+        state.stops = state.stops.filter(s => s.id !== id);
+        persistSettings();
         renderStopsList();
+        performRouteScan(false);
       });
     });
   }
 
-  // Render Preset Tamil Nadu Chips
+  // Render Quick Presets
   function renderPresetChips() {
     presetChips.innerHTML = '';
     RoutingEngine.TAMIL_NADU_PRESETS.slice(0, 10).forEach(preset => {
@@ -153,30 +214,33 @@ document.addEventListener('DOMContentLoaded', () => {
       chip.className = 'preset-chip';
       chip.textContent = `+ ${preset.name.split('(')[0].trim()}`;
       chip.addEventListener('click', () => {
-        addStopToRoute(preset);
+        addNewStop(preset);
       });
       presetChips.appendChild(chip);
     });
   }
 
-  function addStopToRoute(locationObj) {
-    // Insert before the final destination
-    if (state.stops.length >= 2) {
-      state.stops.splice(state.stops.length - 1, 0, locationObj);
-    } else {
-      state.stops.push(locationObj);
-    }
-    persistState();
+  function addNewStop(locationObj) {
+    const newStop = {
+      id: 'stop-' + Date.now(),
+      name: locationObj.name,
+      lat: locationObj.lat,
+      lon: locationObj.lon,
+      visited: false
+    };
+    state.stops.push(newStop);
+    persistSettings();
     renderStopsList();
     newStopInput.value = '';
     searchDropdown.style.display = 'none';
+    performRouteScan(false);
   }
 
-  // Autocomplete / Search for Locations
+  // Autocomplete search
   let searchDebounce = null;
   newStopInput.addEventListener('input', (e) => {
     clearTimeout(searchDebounce);
-    const query = e.target.value;
+    const query = e.target.value.trim();
     if (query.length < 2) {
       searchDropdown.style.display = 'none';
       return;
@@ -195,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
         item.className = 'autocomplete-item';
         item.textContent = res.name;
         item.addEventListener('click', () => {
-          addStopToRoute(res);
+          addNewStop(res);
         });
         searchDropdown.appendChild(item);
       });
@@ -208,83 +272,84 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!val) return;
     const results = await RoutingEngine.searchLocation(val);
     if (results.length > 0) {
-      addStopToRoute(results[0]);
+      addNewStop(results[0]);
     } else {
-      alert(`Location "${val}" not found. Try one of the preset chips or specify a nearby Tamil Nadu area.`);
+      alert(`Location "${val}" not found. Try one of the quick chips or another Tamil Nadu area.`);
     }
   });
 
   // Calculate Route & Scan Weather
-  async function performRouteScan() {
-    btnScanRoute.disabled = true;
-    btnScanRoute.innerHTML = '<span>⏳</span> Calculating route & scanning Tamil Nadu radar...';
+  async function performRouteScan(interactive = true) {
+    if (interactive) {
+      btnScanRoute.disabled = true;
+      btnScanRoute.innerHTML = '<span>⏳</span> Calculating route & scanning radar...';
+    }
 
     try {
-      // 1. Calculate road routing with OSRM
-      const routeData = await RoutingEngine.calculateRoute(state.stops);
+      const allStops = getFullRouteStops();
+      const routeData = await RoutingEngine.calculateRoute(allStops);
       state.currentRoute = routeData;
 
-      // 2. Parse departure time
-      const depTimeVal = document.getElementById('departureTime').value || '07:30';
-      const [depHours, depMins] = depTimeVal.split(':').map(Number);
       const departureDate = new Date();
-      departureDate.setHours(depHours, depMins, 0, 0);
-
-      // 3. Scan weather at each waypoint
       const weatherData = await WeatherEngine.getRouteForecast(routeData.corridorWaypoints, departureDate);
       state.weatherResults = weatherData;
 
-      // 4. Update UI Components
       renderRouteOnMap(routeData, weatherData);
       renderWeatherBanner(weatherData);
       renderTimeline(weatherData);
 
-      routeDistancePill.textContent = `${routeData.distanceKm} km &bull; Est. ${routeData.durationMins} mins travel`;
+      routeDistancePill.textContent = `${routeData.distanceKm} km • Est. ${routeData.durationMins} mins travel`;
 
     } catch (err) {
-      console.error('Scan error:', err);
-      alert('Could not complete route scan. Check internet connection and try again.');
+      console.warn('Scan error:', err);
     } finally {
-      btnScanRoute.disabled = false;
-      btnScanRoute.innerHTML = '<span>🔍</span> Scan Route for Rain & Calculate';
+      if (interactive) {
+        btnScanRoute.disabled = false;
+        btnScanRoute.innerHTML = '<span>🔍</span> Scan Full Route Weather';
+      }
     }
   }
 
-  // Update Leaflet Map with Route and Markers
+  // Render Map with Route & Radar Circles
   function renderRouteOnMap(routeData, weatherData) {
     initMap();
 
-    // Clear previous
-    if (state.mapLayers.routeLine) {
-      state.map.removeLayer(state.mapLayers.routeLine);
-    }
+    if (state.mapLayers.routeLine) state.map.removeLayer(state.mapLayers.routeLine);
     state.mapLayers.markers.forEach(m => state.map.removeLayer(m));
     state.mapLayers.markers = [];
+    state.mapLayers.radarCircles.forEach(c => state.map.removeLayer(c));
+    state.mapLayers.radarCircles = [];
 
-    // Max risk along route to color polyline
     const hasHighRisk = weatherData.some(w => w.weather.riskLevel === 'high');
     const hasMedRisk = weatherData.some(w => w.weather.riskLevel === 'medium');
-    let routeColor = '#22c55e'; // Green
-    if (hasHighRisk) routeColor = '#ef4444'; // Red
-    else if (hasMedRisk) routeColor = '#fb923c'; // Orange
+    let routeColor = '#22c55e';
+    if (hasHighRisk) routeColor = '#ef4444';
+    else if (hasMedRisk) routeColor = '#fb923c';
 
-    // Draw route GeoJSON
+    // Route GeoJSON line
     const lineLayer = L.geoJSON(routeData.geojson, {
-      style: {
-        color: routeColor,
-        weight: 6,
-        opacity: 0.85
-      }
+      style: { color: routeColor, weight: 6, opacity: 0.85 }
     }).addTo(state.map);
     state.mapLayers.routeLine = lineLayer;
 
-    // Add markers for waypoints
+    // Markers & simulated rain clouds
     weatherData.forEach((wp, index) => {
       const risk = wp.weather.riskLevel;
       const markerColor = risk === 'high' ? '#ef4444' : (risk === 'medium' ? '#fb923c' : '#0284c7');
-      
+
+      // Rain radar circle overlay if rain probability > 30%
+      if (wp.weather.rainProb >= 30) {
+        const circle = L.circle([wp.lat, wp.lon], {
+          color: risk === 'high' ? '#ef4444' : '#fb923c',
+          fillColor: risk === 'high' ? '#ef4444' : '#fb923c',
+          fillOpacity: 0.25,
+          radius: 2000 // 2km radar radius
+        }).addTo(state.map);
+        state.mapLayers.radarCircles.push(circle);
+      }
+
       const iconHtml = `
-        <div style="background: ${markerColor}; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.4); font-size: 13px;">
+        <div style="background: ${markerColor}; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.5); font-size: 13px;">
           ${index === 0 ? 'S' : (index === weatherData.length - 1 ? 'E' : index)}
         </div>
       `;
@@ -298,10 +363,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const arrivalTimeStr = wp.arrivalTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       const popupHtml = `
-        <div style="font-family: sans-serif; color: #1e293b;">
+        <div style="color: #1e293b; font-family: sans-serif;">
           <strong>${wp.name}</strong><br>
-          Arrival: ${arrivalTimeStr}<br>
-          Rain: <strong>${wp.weather.rainProb}%</strong> (${wp.weather.rainMm} mm)<br>
+          Arrival Time: ${arrivalTimeStr}<br>
+          Rain Chance: <strong>${wp.weather.rainProb}%</strong> (${wp.weather.rainMm} mm)<br>
           ${wp.weather.icon} ${wp.weather.condition}<br>
           <em style="font-size: 11px;">${wp.weather.advice}</em>
         </div>
@@ -313,7 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
       state.mapLayers.markers.push(marker);
     });
 
-    state.map.fitBounds(lineLayer.getBounds(), { padding: [30, 30] });
+    state.map.fitBounds(lineLayer.getBounds(), { padding: [25, 25] });
   }
 
   // Render Alert Banner
@@ -329,137 +394,223 @@ document.addEventListener('DOMContentLoaded', () => {
       bannerIcon.textContent = '⛈️';
       const spots = highRisks.map(h => h.name.split('(')[0].trim()).join(', ');
       bannerText.innerHTML = `
-        <strong>Monsoon Rain Warning:</strong> Heavy rain (${highRisks[0].weather.rainProb}% prob) detected around <strong>${spots}</strong>. 
-        Pack your waterproof sales bag and consider alternative roads to avoid waterlogging!
+        <strong>Heavy Rain Ahead!</strong> High rain probability detected around <strong>${spots}</strong>. Pack your sales bag in waterproof sleeves!
       `;
     } else if (medRisks.length > 0) {
       routeAlertBanner.classList.add('medium');
       bannerIcon.textContent = '🌧️';
       const spots = medRisks.map(h => h.name.split('(')[0].trim()).join(', ');
       bannerText.innerHTML = `
-        <strong>Rain Alert:</strong> Rain showers expected near <strong>${spots}</strong> around your arrival time. Keep rainwear handy.
+        <strong>Showers Expected:</strong> Moderate rain forecasted around <strong>${spots}</strong>. Keep raincoat ready.
       `;
     } else {
       routeAlertBanner.classList.add('low');
       bannerIcon.textContent = '☀️';
       bannerText.innerHTML = `
-        <strong>Clear Route:</strong> No significant rain forecasted across all sales points. Dry travel conditions!
+        <strong>Route Clear:</strong> Dry skies forecasted across all sales stops. Safe riding!
       `;
     }
   }
 
-  // Render Waypoint Breakdown
+  // Render Timeline
   function renderTimeline(weatherData) {
     waypointTimeline.innerHTML = '';
     weatherData.forEach(wp => {
       const risk = wp.weather.riskLevel;
       const arrivalStr = wp.arrivalTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       
-      const item = document.createElement('div');
-      item.className = `timeline-item risk-${risk}`;
-      item.innerHTML = `
-        <div class="timeline-place">
-          <div class="place-name">${wp.name}</div>
-          <div class="place-meta">
-            Est. Arrival: <strong>${arrivalStr}</strong> &bull; Temp: ${wp.weather.temp}°C &bull; ${wp.weather.condition}
-          </div>
-          <div style="font-size: 0.74rem; color: #94a3b8; margin-top: 3px;">
-            ${wp.weather.advice}
+      const row = document.createElement('div');
+      row.className = `timeline-row risk-${risk}`;
+      row.innerHTML = `
+        <div>
+          <div class="timeline-place-name">${wp.name}</div>
+          <div class="timeline-place-meta">
+            Arrival ~${arrivalStr} &bull; ${wp.weather.temp}°C &bull; ${wp.weather.condition}
           </div>
         </div>
-        <div class="timeline-weather">
-          <span style="font-size: 1.4rem;">${wp.weather.icon}</span>
-          <div class="rain-prob-pill ${risk}">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.25rem;">${wp.weather.icon}</span>
+          <span class="rain-badge ${risk}">
             ${wp.weather.rainProb}% Rain
-          </div>
+          </span>
         </div>
       `;
-      waypointTimeline.appendChild(item);
+      waypointTimeline.appendChild(row);
     });
   }
 
-  // Alarm Testing & Audio
+  // ================= 5-MINUTE CONTINUOUS SENTINEL & ALARM =================
+
+  function toggleShiftMonitoring() {
+    if (state.isMonitoring) {
+      stopShiftMonitoring();
+    } else {
+      startShiftMonitoring();
+    }
+  }
+
+  function startShiftMonitoring() {
+    state.isMonitoring = true;
+    state.nextCheckSeconds = AlarmEngine.config.intervalMinutes * 60;
+
+    // UI Updates
+    statusPulse.className = 'status-pulse active';
+    sentinelStatusTitle.textContent = `Shift Active (Every ${AlarmEngine.config.intervalMinutes}m)`;
+    btnToggleMonitoring.className = 'btn-sentinel-toggle monitoring';
+    sentinelBtnIcon.textContent = '⏹️';
+    sentinelBtnText.textContent = 'Stop Shift';
+    btnShiftAction.innerHTML = '<span>⏹️</span> Stop 5-Min Route Sentinel';
+    btnShiftAction.style.background = '#ef4444';
+
+    // Start AlarmEngine sentinel
+    AlarmEngine.startMonitoring(
+      () => getRemainingUnvisitedStops(),
+      (scanResult) => {
+        onSentinelScanResult(scanResult);
+      }
+    );
+
+    // Start countdown timer
+    startCountdown();
+
+    sentinelLogBox.innerHTML = `
+      <span style="color: #22c55e;">🟢 Sentinel Activated:</span> Scanning unvisited stops every ${AlarmEngine.config.intervalMinutes} minutes.<br>
+      Last check: <strong>${new Date().toLocaleTimeString()}</strong>
+    `;
+  }
+
+  function stopShiftMonitoring() {
+    state.isMonitoring = false;
+    clearInterval(state.countdownInterval);
+
+    statusPulse.className = 'status-pulse';
+    sentinelStatusTitle.textContent = 'Shift Monitor: Ready';
+    sentinelCountdown.textContent = 'Tap "Start Shift" to auto-check rain every 5m';
+    btnToggleMonitoring.className = 'btn-sentinel-toggle';
+    sentinelBtnIcon.textContent = '▶️';
+    sentinelBtnText.textContent = 'Start Shift';
+    btnShiftAction.innerHTML = '<span>🛡️</span> Start 5-Min Route Sentinel';
+    btnShiftAction.style.background = 'linear-gradient(135deg, #0284c7, #0369a1)';
+
+    AlarmEngine.stopMonitoring();
+    sentinelLogBox.innerHTML += `<br><span style="color: #94a3b8;">⚪ Shift stopped at ${new Date().toLocaleTimeString()}.</span>`;
+  }
+
+  function startCountdown() {
+    if (state.countdownInterval) clearInterval(state.countdownInterval);
+    state.countdownInterval = setInterval(() => {
+      if (!state.isMonitoring) return;
+      state.nextCheckSeconds--;
+
+      if (state.nextCheckSeconds <= 0) {
+        state.nextCheckSeconds = AlarmEngine.config.intervalMinutes * 60;
+      }
+
+      const mins = Math.floor(state.nextCheckSeconds / 60);
+      const secs = state.nextCheckSeconds % 60;
+      const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      sentinelCountdown.textContent = `Next route radar scan in: ${formatted}`;
+    }, 1000);
+  }
+
+  function onSentinelScanResult(scanResult) {
+    const timeStr = scanResult.timestamp.toLocaleTimeString();
+    if (scanResult.hasRain) {
+      statusPulse.className = 'status-pulse alert';
+      const areas = scanResult.rainThreats.map(t => t.name.split('(')[0].trim()).join(', ');
+      sentinelLogBox.innerHTML = `
+        <span style="color: #ef4444; font-weight: bold;">🚨 [${timeStr}] RAIN ALARM TRIGGERED:</span><br>
+        Rain forecasted at: <strong>${areas}</strong>!
+      `;
+    } else {
+      statusPulse.className = 'status-pulse active';
+      sentinelLogBox.innerHTML = `
+        <span style="color: #22c55e;">[${timeStr}] Scan complete:</span> All remaining stops are currently clear.
+      `;
+    }
+  }
+
+  // Active Alarm Modal Listener
+  window.addEventListener('mazhai-alarm-triggered', (e) => {
+    alarmOverlay.classList.add('active');
+    const threats = (state.weatherResults || []).filter(w => w.weather.riskLevel === 'high' || w.weather.rainProb >= AlarmEngine.config.rainThresholdProb);
+    if (threats.length > 0) {
+      const names = threats.map(t => t.name.split('(')[0].trim()).join(', ');
+      alarmModalDesc.textContent = `Immediate rain threat detected at: ${names} (${threats[0].weather.rainProb}% probability). Take precautions!`;
+    }
+  });
+
+  window.addEventListener('mazhai-alarm-dismissed', () => {
+    alarmOverlay.classList.remove('active');
+    if (state.isMonitoring) {
+      statusPulse.className = 'status-pulse active';
+    }
+  });
+
+  btnDismissAlarm.addEventListener('click', () => {
+    AlarmEngine.stopRinging();
+  });
+
+  // Connect Sentinel Buttons
+  btnToggleMonitoring.addEventListener('click', toggleShiftMonitoring);
+  btnShiftAction.addEventListener('click', toggleShiftMonitoring);
+
+  // Settings Event Handlers
+  pollIntervalSelect.addEventListener('change', (e) => {
+    AlarmEngine.config.intervalMinutes = parseInt(e.target.value);
+    persistSettings();
+    if (state.isMonitoring) {
+      // Restart monitoring with new interval
+      stopShiftMonitoring();
+      startShiftMonitoring();
+    }
+  });
+
+  rainSensitivitySelect.addEventListener('change', (e) => {
+    AlarmEngine.config.rainThresholdProb = parseInt(e.target.value);
+    persistSettings();
+  });
+
+  alarmToneSelect.addEventListener('change', (e) => {
+    AlarmEngine.config.tone = e.target.value;
+    persistSettings();
+  });
+
+  voiceToggle.addEventListener('change', (e) => {
+    AlarmEngine.config.voiceEnabled = e.target.checked;
+    persistSettings();
+  });
+
+  wakeLockToggle.addEventListener('change', (e) => {
+    AlarmEngine.config.keepScreenAwake = e.target.checked;
+    persistSettings();
+  });
+
   btnTestAlarm.addEventListener('click', async () => {
     AlarmEngine.initAudio();
     await AlarmEngine.requestNotificationPermission();
 
-    // Use current scan if available, or generate a realistic simulation
-    const mockScan = state.weatherResults || [
-      { name: 'Pallikaranai', weather: { riskLevel: 'high' } },
-      { name: 'Kelambakkam', weather: { riskLevel: 'medium' } }
+    const mockThreats = [
+      { name: 'Pallikaranai', weather: { rainProb: 80, rainMm: 4.2, riskLevel: 'high' } }
     ];
-
-    const result = AlarmEngine.triggerRainAlarm(state.alarm, mockScan);
-    alarmStatusLog.innerHTML = `
-      <span style="color: #38bdf8;">🔊 Alarm Tested Successfully!</span><br>
-      Tone: <strong>${result.soundType.toUpperCase()}</strong><br>
-      ${result.message}
-    `;
+    AlarmEngine.triggerAlarmAlert(mockThreats);
   });
 
-  // Alarm Ticker (Checks every 30 seconds for scheduled time)
-  setInterval(() => {
-    if (!state.alarm.enabled) return;
-    const now = new Date();
-    const currentClock = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    
-    if (currentClock === state.alarm.time && now.getSeconds() < 30) {
-      console.log('⏰ Scheduled morning rain alarm triggered at:', currentClock);
-      performRouteScan().then(() => {
-        if (state.weatherResults) {
-          AlarmEngine.triggerRainAlarm(state.alarm, state.weatherResults);
-        }
-      });
-    }
-  }, 30000);
-
-  // Save Alarm Changes
-  alarmToggle.addEventListener('change', (e) => {
-    state.alarm.enabled = e.target.checked;
-    persistState();
-    updateAlarmStatusText();
-  });
-  alarmTimeInput.addEventListener('change', (e) => {
-    state.alarm.time = e.target.value;
-    persistState();
-    updateAlarmStatusText();
-  });
-  voiceToggle.addEventListener('change', (e) => {
-    state.alarm.voice = e.target.checked;
-    persistState();
-  });
-  alarmToneSelect.addEventListener('change', (e) => {
-    state.alarm.tone = e.target.value;
-    persistState();
-  });
-
-  function updateAlarmStatusText() {
-    if (state.alarm.enabled) {
-      alarmStatusLog.innerHTML = `Alarm active for <strong>${state.alarm.time}</strong>. Will trigger route scan and alert.`;
-    } else {
-      alarmStatusLog.innerHTML = `<span style="color: #ef4444;">Alarm is currently disabled.</span>`;
-    }
-  }
-
-  // Live GPS Forecast
+  // Live Location & 24h Forecast
   async function fetchLiveGpsWeather() {
-    liveCondition.textContent = 'Detecting live GPS...';
+    liveCondition.textContent = 'Detecting GPS...';
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
-          state.liveCoords = {
-            lat: pos.coords.latitude,
-            lon: pos.coords.longitude
-          };
+          state.liveCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
           await updateLiveWeatherUI(state.liveCoords.lat, state.liveCoords.lon);
         },
-        async (err) => {
-          console.warn('Geolocation denied/unavailable, defaulting to Chennai:', err);
-          await updateLiveWeatherUI(13.0012, 80.2565, 'Chennai (Default GPS)');
+        async () => {
+          await updateLiveWeatherUI(13.0012, 80.2565, 'Chennai (Default)');
         }
       );
     } else {
-      await updateLiveWeatherUI(13.0012, 80.2565, 'Chennai (Default GPS)');
+      await updateLiveWeatherUI(13.0012, 80.2565, 'Chennai (Default)');
     }
   }
 
@@ -473,21 +624,16 @@ document.addEventListener('DOMContentLoaded', () => {
       livePrecip.textContent = `${data.current.precip} mm`;
       liveWeatherIcon.textContent = data.current.icon;
       liveLocationTitle.textContent = label || `Live Location (${lat.toFixed(3)}, ${lon.toFixed(3)})`;
-
       renderRainChart(data.hourly);
     } catch (e) {
-      console.error('Live weather load error:', e);
-      liveCondition.textContent = 'Weather update unavailable';
+      liveCondition.textContent = 'Weather unavailable';
     }
   }
 
   function renderRainChart(hourly) {
     const ctx = document.getElementById('rainChart');
     if (!ctx) return;
-
-    if (state.rainChart) {
-      state.rainChart.destroy();
-    }
+    if (state.rainChart) state.rainChart.destroy();
 
     const labels = hourly.time.slice(0, 16).map(t => {
       const d = new Date(t);
@@ -514,20 +660,10 @@ document.addEventListener('DOMContentLoaded', () => {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          y: {
-            min: 0,
-            max: 100,
-            ticks: { color: '#94a3b8' },
-            grid: { color: '#334155' }
-          },
-          x: {
-            ticks: { color: '#94a3b8' },
-            grid: { display: false }
-          }
+          y: { min: 0, max: 100, ticks: { color: '#94a3b8' }, grid: { color: '#26354f' } },
+          x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
         },
-        plugins: {
-          legend: { display: false }
-        }
+        plugins: { legend: { display: false } }
       }
     });
   }
@@ -538,8 +674,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   btnRefreshLive.addEventListener('click', fetchLiveGpsWeather);
 
-  // Tabs Switching
-  document.querySelectorAll('.tab-btn').forEach(btn => {
+  // Synchronized Tabs (Desktop App Tabs + Mobile Bottom Nav)
+  document.querySelectorAll('.tab-btn, .nav-item').forEach(btn => {
     btn.addEventListener('click', () => {
       const tabId = btn.getAttribute('data-tab');
       switchTab(tabId);
@@ -547,48 +683,50 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function switchTab(tabId) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
-
-    const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
-    const activeView = document.getElementById(tabId);
-    if (activeBtn) activeBtn.classList.add('active');
-    if (activeView) activeView.classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-tab') === tabId);
+    });
+    document.querySelectorAll('.nav-item').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-tab') === tabId);
+    });
+    document.querySelectorAll('.tab-content').forEach(c => {
+      c.classList.toggle('active', c.id === tabId);
+    });
 
     if (tabId === 'tab-route' && state.map) {
       setTimeout(() => state.map.invalidateSize(), 200);
     }
   }
 
-  // Toggle Desktop / Mobile Simulator Mode
+  // Desktop Simulator Toggle
   btnToggleSim.addEventListener('click', () => {
-    appContainer.classList.toggle('mobile-sim-mode');
+    appLayout.classList.toggle('mobile-sim-mode');
     setTimeout(() => {
       if (state.map) state.map.invalidateSize();
     }, 300);
   });
 
-  // Tutorial / Onboarding Walkthrough
+  // Tutorial / User Guide
   const tutorialSteps = [
     {
       icon: '🌧️',
       title: 'Welcome to MazhaiAlarm',
-      desc: 'Created for field sales professionals across Tamil Nadu who travel to 10+ areas daily during the heavy monsoon season.'
+      desc: 'Engineered for field sales executives covering 10+ areas daily across Tamil Nadu during unpredictable monsoon downpours.'
     },
     {
       icon: '🛣️',
-      title: 'Plan Routes with Custom Detours',
-      desc: 'Going from Wimco Nagar or Adyar to Kelambakkam? Add your custom sales stops like Pallikaranai or Kovalam and see the entire route on the map.'
+      title: 'Set Daily Route & Detours',
+      desc: 'Heading from Wimco Nagar or Adyar to Kelambakkam? Add stops like Pallikaranai, Kovalam, or Sholinganallur with 1-tap!'
     },
     {
-      icon: '📊',
-      title: 'Arrival-Time Rain Radar',
-      desc: 'MazhaiAlarm calculates the exact estimated time you will arrive at each stop and checks the hourly rain probability for that specific moment!'
+      icon: '🛡️',
+      title: '5-Minute Active Route Sentinel',
+      desc: 'Tap "Start Shift" when leaving. MazhaiAlarm monitors your remaining stops every 5 minutes in the background!'
     },
     {
-      icon: '⏰',
-      title: 'Smart Morning Alarms',
-      desc: 'Set your wake-up alarm (e.g. 07:15 AM). The app rings and speaks out weather warnings so you know whether to pack rain gear before leaving home!'
+      icon: '🚨',
+      title: 'Dynamic Rain Alarms',
+      desc: 'If rain develops ahead, it rings an audible alarm, vibrates your phone, and speaks out warnings so you can seek shelter in time!'
     }
   ];
 
@@ -598,16 +736,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('tutTitle').textContent = step.title;
     document.getElementById('tutDesc').textContent = step.desc;
 
-    const dots = document.querySelectorAll('#tutDots .dot');
-    dots.forEach((dot, i) => {
+    document.querySelectorAll('#tutDots .dot').forEach((dot, i) => {
       dot.classList.toggle('active', i === idx);
     });
 
-    if (idx === tutorialSteps.length - 1) {
-      btnNextTut.textContent = 'Get Started 🚀';
-    } else {
-      btnNextTut.textContent = 'Next →';
-    }
+    btnNextTut.textContent = idx === tutorialSteps.length - 1 ? 'Start Monitoring 🚀' : 'Next →';
   }
 
   btnHelpTutorial.addEventListener('click', () => {
@@ -618,7 +751,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnSkipTut.addEventListener('click', () => {
     tutorialModal.classList.remove('open');
-    localStorage.setItem('mazhai_tut_done', 'true');
+    localStorage.setItem('mazhai_tut_done_v2', 'true');
   });
 
   btnNextTut.addEventListener('click', () => {
@@ -627,31 +760,27 @@ document.addEventListener('DOMContentLoaded', () => {
       showTutorialStep(state.tutorialStep);
     } else {
       tutorialModal.classList.remove('open');
-      localStorage.setItem('mazhai_tut_done', 'true');
-      performRouteScan();
+      localStorage.setItem('mazhai_tut_done_v2', 'true');
+      performRouteScan(true);
     }
   });
 
-  // Check if first time
-  if (!localStorage.getItem('mazhai_tut_done')) {
+  if (!localStorage.getItem('mazhai_tut_done_v2')) {
     state.tutorialStep = 0;
     showTutorialStep(0);
     tutorialModal.classList.add('open');
   }
 
-  // Profile Save
+  // Save Territory
   document.getElementById('btnSaveProfile')?.addEventListener('click', () => {
     const name = document.getElementById('profileName').value;
-    const home = document.getElementById('profileHome').value;
-    alert(`Profile updated for ${name}! Home base saved as: ${home}`);
+    alert(`Territory saved for ${name}!`);
   });
 
-  // Register Service Worker for PWA
+  // Service Worker for PWA
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(err => {
-        console.warn('SW registration failed:', err);
-      });
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
     });
   }
 
@@ -660,10 +789,10 @@ document.addEventListener('DOMContentLoaded', () => {
   renderStopsList();
   renderPresetChips();
   initMap();
-  btnScanRoute.addEventListener('click', performRouteScan);
+  btnScanRoute.addEventListener('click', () => performRouteScan(true));
 
-  // Initial scan on load
+  // Initial Scan
   setTimeout(() => {
-    performRouteScan();
-  }, 500);
+    performRouteScan(false);
+  }, 400);
 });

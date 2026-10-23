@@ -2,13 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>MazhaiAlarm - Tamil Nadu Rain & Route Alarm</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>MazhaiAlarm - Tamil Nadu Field Sales Rain Monitor</title>
   
-  <!-- PWA Manifest & Meta -->
+  <!-- PWA & Mobile Meta -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0284c7">
-  <meta name="description" content="Intelligent rain monitoring and route alarm for sales professionals in Tamil Nadu.">
+  <meta name="theme-color" content="#0369a1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Continuous 5-minute route rain monitoring and smart alarm for field sales in Tamil Nadu.">
 
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -22,304 +24,377 @@
 </head>
 <body>
 
-  <!-- Main Container (Responsive Desktop & Mobile Simulator Mode) -->
-  <div class="app-container" id="appContainer">
-    
-    <!-- App Header -->
+  <!-- Full Screen Wrapper -->
+  <div class="app-layout" id="appLayout">
+
+    <!-- Top Sticky Sentinel Monitor Bar -->
+    <header class="sentinel-bar" id="sentinelBar">
+      <div class="sentinel-status">
+        <span class="status-pulse" id="statusPulse"></span>
+        <div class="status-meta">
+          <div class="status-title" id="sentinelStatusTitle">Shift Monitor: Ready</div>
+          <div class="status-sub" id="sentinelCountdown">Tap "Start Shift" to auto-check rain every 5m</div>
+        </div>
+      </div>
+      <div class="sentinel-actions">
+        <button class="btn-sentinel-toggle" id="btnToggleMonitoring">
+          <span id="sentinelBtnIcon">▶️</span> <span id="sentinelBtnText">Start Shift</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Desktop Simulator Mode & Global Header -->
     <header class="app-header">
       <div class="logo-area">
         <div class="app-logo-badge">🌧️</div>
         <div class="title-group">
           <h1>MazhaiAlarm <span class="tn-badge">Tamil Nadu</span></h1>
-          <p class="subtitle">Field Sales Rain & Route Monitor</p>
+          <p class="subtitle">5-Min Route Rain Sentinel & Alarms</p>
         </div>
       </div>
       <div class="header-controls">
-        <button class="btn-icon" id="btnLiveGps" title="Check Current Location Weather">
-          <span>📍</span> Live GPS
+        <button class="btn-icon" id="btnLiveGps" title="Live Location">
+          <span>📍</span> GPS
         </button>
-        <button class="btn-icon" id="btnHelpTutorial" title="Tutorial & How to use">
+        <button class="btn-icon" id="btnHelpTutorial" title="User Guide">
           <span>❓</span> Help
         </button>
-        <button class="btn-icon" id="btnToggleSim" title="Toggle Mobile Phone Mockup View">
-          <span>📱</span> Mode
+        <button class="btn-icon desktop-only-btn" id="btnToggleSim" title="Toggle Mobile Mockup Frame">
+          <span>📱</span> View
         </button>
       </div>
     </header>
 
-    <!-- Navigation Tabs -->
-    <nav class="app-tabs">
-      <button class="tab-btn active" data-tab="tab-route">
-        <span>🛣️</span> Route & Radar
-      </button>
-      <button class="tab-btn" data-tab="tab-alarm">
-        <span>⏰</span> Rain Alarms
-      </button>
-      <button class="tab-btn" data-tab="tab-live">
-        <span>🌦️</span> Live Forecast
-      </button>
-      <button class="tab-btn" data-tab="tab-profile">
-        <span>👤</span> Profile
-      </button>
-    </nav>
+    <!-- Main Content Area (Dual Column on Desktop, Single Column on Mobile) -->
+    <main class="main-workspace">
 
-    <!-- App Body Content -->
-    <main class="app-body">
-
-      <!-- ================= TAB 1: ROUTE & RADAR ================= -->
-      <section class="tab-view active" id="tab-route">
+      <!-- Column 1: Route Builder & Sentinel Controls -->
+      <section class="left-pane">
         
-        <!-- Route Builder Card -->
-        <div class="card">
-          <div class="card-title">
-            <span>Daily Sales Route & Detours</span>
-            <span style="font-size: 0.75rem; color: var(--accent-cyan); font-weight: normal;">100% Free Live Weather</span>
-          </div>
+        <!-- Tab Navigation (Desktop Header / Mobile Top) -->
+        <nav class="app-tabs">
+          <button class="tab-btn active" data-tab="tab-route">
+            <span>🛣️</span> Route
+          </button>
+          <button class="tab-btn" data-tab="tab-sentinel">
+            <span>⏰</span> 5m Alarms
+          </button>
+          <button class="tab-btn" data-tab="tab-live">
+            <span>🌦️</span> Radar
+          </button>
+          <button class="tab-btn" data-tab="tab-profile">
+            <span>👤</span> Territory
+          </button>
+        </nav>
 
-          <div class="route-input-group">
-            <!-- Origin -->
-            <div class="input-row">
-              <span class="input-icon">🟢</span>
-              <input type="text" class="route-input" id="originInput" placeholder="Starting point (e.g. Wimco Nagar)" value="Wimco Nagar (Home Base)">
+        <!-- Tab 1: Route Builder & Stop Checklist -->
+        <div class="tab-content active" id="tab-route">
+          <div class="card">
+            <div class="card-header">
+              <h3>Today's Field Sales Route</h3>
+              <span class="badge-free">100% Free Data</span>
             </div>
 
-            <!-- Detours / Stops List -->
-            <div class="stops-container" id="stopsContainer">
-              <!-- Stop chips dynamically injected here -->
-            </div>
-
-            <!-- Add Intermediate Stop / Detour -->
-            <div class="add-stop-bar">
-              <div class="input-row" style="flex: 1;">
-                <span class="input-icon">➕</span>
-                <input type="text" class="route-input" id="newStopInput" placeholder="Add detour / sales stop (e.g. Pallikaranai, Kovalam)">
+            <!-- Route Origin & Destination -->
+            <div class="route-field-group">
+              <div class="field-item">
+                <span class="field-icon">🟢</span>
+                <input type="text" class="route-input" id="originInput" placeholder="Start Location" value="Wimco Nagar (Home Base)">
               </div>
-              <button class="btn-add-stop" id="btnAddStop">Add Stop</button>
-              
-              <!-- Suggestions Dropdown -->
-              <div class="autocomplete-dropdown" id="searchDropdown"></div>
+
+              <!-- Intermediate Stops / Detours -->
+              <div class="detours-box">
+                <div class="detours-header">
+                  <span>Stops & Detours Today (<span id="stopCount">2</span> remaining)</span>
+                  <span class="hint-text">Check box when visited</span>
+                </div>
+                <div class="stops-list" id="stopsContainer">
+                  <!-- Dynamically rendered stop chips with "visited" checkboxes -->
+                </div>
+              </div>
+
+              <!-- Add New Custom Detour -->
+              <div class="add-stop-row">
+                <input type="text" class="route-input" id="newStopInput" placeholder="Add sales stop (e.g. Pallikaranai, Kovalam)">
+                <button class="btn-add" id="btnAddStop">Add</button>
+                <div class="autocomplete-dropdown" id="searchDropdown"></div>
+              </div>
+
+              <!-- Quick TN Corridor Presets -->
+              <div class="preset-section">
+                <span class="preset-label">Quick Add Common Corridors:</span>
+                <div class="preset-chips" id="presetChips"></div>
+              </div>
+
+              <div class="field-item">
+                <span class="field-icon">🏁</span>
+                <input type="text" class="route-input" id="destInput" placeholder="Final Destination" value="Kelambakkam (Final Stop)">
+              </div>
             </div>
 
-            <!-- Destination -->
-            <div class="input-row">
-              <span class="input-icon">🏁</span>
-              <input type="text" class="route-input" id="destInput" placeholder="Final destination (e.g. Kelambakkam)" value="Kelambakkam">
-            </div>
-
-            <!-- Departure Time Picker -->
-            <div class="time-select-row">
-              <span style="font-size: 0.85rem; color: var(--text-muted);">Today's Departure Time:</span>
-              <input type="time" class="time-picker" id="departureTime" value="07:30">
+            <!-- Action Buttons -->
+            <div class="route-action-buttons">
+              <button class="btn-scan" id="btnScanRoute">
+                <span>🔍</span> Scan Full Route Weather
+              </button>
+              <button class="btn-start-shift" id="btnShiftAction">
+                <span>🛡️</span> Start 5-Min Route Sentinel
+              </button>
             </div>
           </div>
 
-          <!-- Quick Preset Chips for Tamil Nadu -->
-          <div style="margin-top: 12px;">
-            <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 4px;">Quick Add Popular Corridors:</p>
-            <div class="preset-chips" id="presetChips">
-              <!-- Populated by JS -->
-            </div>
+          <!-- Dynamic Alert Banner -->
+          <div id="routeAlertBanner" class="alert-banner low" style="display: none;">
+            <span class="banner-icon" id="bannerIcon">☀️</span>
+            <div class="banner-content" id="bannerText">Scan route or start shift to begin monitoring.</div>
           </div>
 
-          <div style="margin-top: 16px;">
-            <button class="btn-primary" id="btnScanRoute">
-              <span>🔍</span> Scan Route for Rain & Calculate
-            </button>
+          <!-- Waypoint Timeline Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Stops Weather Timeline</h3>
+              <span class="sub-label" id="routeDistancePill"></span>
+            </div>
+            <div class="timeline-container" id="waypointTimeline">
+              <div class="empty-timeline">
+                Tap <strong>"Scan Full Route Weather"</strong> to load live rain forecasts for each stop.
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Dynamic Weather Banner -->
-        <div id="routeAlertBanner" class="alert-banner low" style="display: none;">
-          <span style="font-size: 1.5rem;" id="bannerIcon">☀️</span>
-          <div id="bannerText">Scan your route to check rain conditions.</div>
+        <!-- Tab 2: 5-Minute Alarms & Settings -->
+        <div class="tab-content" id="tab-sentinel">
+          <div class="card">
+            <div class="card-header">
+              <h3>5-Minute Rain Alarm Settings</h3>
+              <span>🔔</span>
+            </div>
+            <p class="card-desc">
+              When your dad is on the road, MazhaiAlarm checks all remaining stops every 5 minutes. If rain develops ahead, it sounds an alarm, vibrates the phone, and speaks out warnings.
+            </p>
+
+            <div class="setting-item">
+              <div>
+                <div class="setting-name">Polling Frequency</div>
+                <div class="setting-hint">How often to re-check rain radar</div>
+              </div>
+              <select class="select-box" id="pollIntervalSelect">
+                <option value="3">Every 3 minutes (Heavy Monsoon)</option>
+                <option value="5" selected>Every 5 minutes (Recommended)</option>
+                <option value="10">Every 10 minutes</option>
+              </select>
+            </div>
+
+            <div class="setting-item">
+              <div>
+                <div class="setting-name">Rain Sensitivity Trigger</div>
+                <div class="setting-hint">Sound alarm when rain probability exceeds</div>
+              </div>
+              <select class="select-box" id="rainSensitivitySelect">
+                <option value="25">25% (High Caution / Light Showers)</option>
+                <option value="35" selected>35% (Recommended)</option>
+                <option value="50">50% (Moderate to Heavy Rain)</option>
+                <option value="70">70% (Severe Storms Only)</option>
+              </select>
+            </div>
+
+            <div class="setting-item">
+              <div>
+                <div class="setting-name">Alarm Tone</div>
+                <div class="setting-hint">Offline Web Audio synthesizer</div>
+              </div>
+              <select class="select-box" id="alarmToneSelect">
+                <option value="siren">🚨 Urgent Heavy Rain Siren</option>
+                <option value="chime">🎵 Pleasant Alert Chime</option>
+              </select>
+            </div>
+
+            <div class="setting-item">
+              <div>
+                <div class="setting-name">Voice Announcement</div>
+                <div class="setting-hint">Speaks area name and raincoat advisory</div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="voiceToggle" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-item">
+              <div>
+                <div class="setting-name">Keep Phone Screen Awake</div>
+                <div class="setting-hint">Uses Screen WakeLock while on bike/car mount</div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="wakeLockToggle" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div style="margin-top: 16px;">
+              <button class="btn-test-alarm" id="btnTestAlarm">
+                <span>🔊</span> Test Alarm Sound & Voice Now
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Sentinel Activity History</h3>
+            </div>
+            <div id="sentinelLogBox" class="log-box">
+              Monitoring ready. No alarms triggered yet.
+            </div>
+          </div>
         </div>
 
-        <!-- Map View -->
-        <div class="card" style="padding: 10px;">
-          <div class="card-title" style="margin-bottom: 8px;">
-            <span>Route Rain Radar Map</span>
-            <span id="routeDistancePill" style="font-size: 0.75rem; color: var(--accent-cyan);"></span>
+        <!-- Tab 3: Live Radar & Hourly GPS -->
+        <div class="tab-content" id="tab-live">
+          <div class="card">
+            <div class="card-header">
+              <h3 id="liveLocationTitle">Live Location Weather</h3>
+              <button class="btn-small-refresh" id="btnRefreshLive">🔄 Refresh</button>
+            </div>
+            
+            <div class="live-weather-grid">
+              <div class="live-weather-left">
+                <span class="live-icon" id="liveWeatherIcon">⛅</span>
+                <div>
+                  <div class="live-temp" id="liveTemp">--°C</div>
+                  <div class="live-condition" id="liveCondition">Acquiring GPS...</div>
+                </div>
+              </div>
+              <div class="live-weather-right">
+                <div>Humidity: <strong id="liveHumidity">--%</strong></div>
+                <div>Wind: <strong id="liveWind">-- km/h</strong></div>
+                <div>Precipitation: <strong id="livePrecip">-- mm</strong></div>
+              </div>
+            </div>
           </div>
-          <div id="routeMap"></div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>24-Hour Rain Probability (%)</h3>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="rainChart"></canvas>
+            </div>
+          </div>
         </div>
 
-        <!-- Waypoint Rain Breakdown -->
-        <div class="card">
-          <div class="card-title">
-            <span>Area-by-Area Rain Timeline</span>
-            <span style="font-size: 0.75rem; color: var(--text-muted);">Estimated arrival weather</span>
+        <!-- Tab 4: Profile & Territory -->
+        <div class="tab-content" id="tab-profile">
+          <div class="card">
+            <div class="card-header">
+              <h3>Sales Territory Profile</h3>
+            </div>
+            <div class="route-field-group">
+              <div class="field-item">
+                <span class="field-icon">👤</span>
+                <input type="text" class="route-input" id="profileName" placeholder="Sales Executive Name" value="Field Officer">
+              </div>
+              <div class="field-item">
+                <span class="field-icon">🏠</span>
+                <input type="text" class="route-input" id="profileHome" placeholder="Home Base" value="Wimco Nagar, Chennai">
+              </div>
+              <div class="field-item">
+                <span class="field-icon">🏢</span>
+                <input type="text" class="route-input" id="profileOffice" placeholder="HQ Office" value="Adyar, Chennai">
+              </div>
+            </div>
+            <div style="margin-top: 14px;">
+              <button class="btn-scan" id="btnSaveProfile">Save Territory</button>
+            </div>
           </div>
-          <div class="timeline-list" id="waypointTimeline">
-            <p style="font-size: 0.82rem; color: var(--text-muted); text-align: center; padding: 20px;">
-              Click <strong>"Scan Route for Rain"</strong> to see hourly weather at every sales stop.
+
+          <div class="card">
+            <div class="card-header">
+              <h3>About MazhaiAlarm</h3>
+            </div>
+            <p class="card-desc">
+              Tailored for sales professionals in Tamil Nadu to avoid Northeast Monsoon waterlogging and rain damage. Built with 100% free open APIs (Open-Meteo, OSRM, Leaflet) and ready for Android AAB deployment on Google Play.
             </p>
           </div>
         </div>
 
       </section>
 
-      <!-- ================= TAB 2: RAIN ALARMS ================= -->
-      <section class="tab-view" id="tab-alarm">
-        <div class="card">
-          <div class="card-title">
-            <span>Pre-Departure Morning Rain Alarm</span>
-            <span>🔔</span>
-          </div>
-          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">
-            Set your alarm for the morning. When it triggers, MazhaiAlarm automatically checks every stop in today's route and alerts you with sound & speech if rain is expected.
-          </p>
-
-          <div class="alarm-row">
-            <div>
-              <div style="font-weight: 600; font-size: 0.9rem;">Enable Daily Morning Alarm</div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">Auto-scan weather before leaving home</div>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="alarmToggle" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <div class="alarm-row">
-            <div>
-              <div style="font-weight: 600; font-size: 0.9rem;">Alarm Wakeup / Departure Time</div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">Adjustable daily (e.g. 06:50, 07:15, 07:45)</div>
-            </div>
-            <input type="time" class="time-picker" id="alarmTimeInput" value="07:15">
-          </div>
-
-          <div class="alarm-row">
-            <div>
-              <div style="font-weight: 600; font-size: 0.9rem;">Voice Audio Announcement</div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">Speaks rain warning and advised detour gear</div>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="voiceToggle" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <div class="alarm-row">
-            <div>
-              <div style="font-weight: 600; font-size: 0.9rem;">Alarm Tone Type</div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">Synthesized Web Audio (Works 100% offline)</div>
-            </div>
-            <select class="time-picker" id="alarmToneSelect">
-              <option value="chime">Pleasant Morning Chime</option>
-              <option value="siren">Monsoon Heavy Rain Siren</option>
-            </select>
-          </div>
-
-          <div style="margin-top: 16px; display: flex; gap: 10px;">
-            <button class="btn-primary" id="btnTestAlarm" style="background: #2563eb;">
-              <span>🔊</span> Test Alarm & Voice Announcement
-            </button>
-          </div>
-        </div>
-
-        <!-- Alarm Logs / History -->
-        <div class="card">
-          <div class="card-title">Recent Alarm Checks</div>
-          <div id="alarmStatusLog" style="font-size: 0.85rem; color: var(--text-muted);">
-            Alarm active for <strong>07:15 AM</strong>. Will trigger route scan and alert.
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= TAB 3: LIVE FORECAST ================= -->
-      <section class="tab-view" id="tab-live">
-        <div class="card">
-          <div class="card-title">
-            <span id="liveLocationTitle">Live Location Weather</span>
-            <button class="btn-icon" id="btnRefreshLive" style="padding: 4px 8px; font-size: 0.75rem;">🔄 Refresh</button>
-          </div>
-          
-          <div style="display: flex; align-items: center; justify-content: space-between; margin: 10px 0;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <span style="font-size: 2.8rem;" id="liveWeatherIcon">⛅</span>
-              <div>
-                <div style="font-size: 2.2rem; font-weight: 800;" id="liveTemp">--°C</div>
-                <div style="font-size: 0.85rem; color: var(--accent-cyan);" id="liveCondition">Detecting location...</div>
-              </div>
-            </div>
-            <div style="text-align: right; font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
-              <div>Humidity: <span style="color:#fff;" id="liveHumidity">--%</span></div>
-              <div>Wind: <span style="color:#fff;" id="liveWind">-- km/h</span></div>
-              <div>Precipitation: <span style="color:#fff;" id="livePrecip">-- mm</span></div>
+      <!-- Column 2: Interactive Route & Rain Radar Map (Always accessible) -->
+      <section class="right-pane">
+        <div class="map-card">
+          <div class="map-header">
+            <div class="map-title-row">
+              <span class="map-title">Tamil Nadu Live Route Radar</span>
+              <span class="radar-tag">🔴 Live 5m Polling</span>
             </div>
           </div>
-        </div>
-
-        <!-- 24h Rain Graph -->
-        <div class="card">
-          <div class="card-title">Next 24 Hours Rain Probability (%)</div>
-          <div style="position: relative; height: 180px;">
-            <canvas id="rainChart"></canvas>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= TAB 4: PROFILE & SETTINGS ================= -->
-      <section class="tab-view" id="tab-profile">
-        <div class="card">
-          <div class="card-title">Field Sales Profile</div>
-          <div class="route-input-group">
-            <div class="input-row">
-              <span class="input-icon">👤</span>
-              <input type="text" class="route-input" id="profileName" placeholder="Sales Representative Name" value="Field Officer">
-            </div>
-            <div class="input-row">
-              <span class="input-icon">🏠</span>
-              <input type="text" class="route-input" id="profileHome" placeholder="Home Base Location" value="Wimco Nagar, Chennai">
-            </div>
-            <div class="input-row">
-              <span class="input-icon">🏢</span>
-              <input type="text" class="route-input" id="profileOffice" placeholder="Company Headquarters" value="Adyar, Chennai">
-            </div>
-          </div>
-          <div style="margin-top: 14px;">
-            <button class="btn-primary" id="btnSaveProfile">Save Profile</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">About MazhaiAlarm</div>
-          <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
-            Developed for field sales professionals across Tamil Nadu to anticipate monsoon downpours, avoid waterlogged corridors (such as Velachery, Pallikaranai, and OMR lowlands), and safeguard electronics/documents.
-          </p>
-          <div style="margin-top: 12px; font-size: 0.78rem; color: #64748b;">
-            Version 1.0.0 &bull; 100% Free Open Data &bull; Android AAB Ready
-          </div>
+          <div id="routeMap"></div>
         </div>
       </section>
 
     </main>
+
+    <!-- Bottom Navigation Bar for Mobile -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-tab="tab-route">
+        <span class="nav-icon">🛣️</span>
+        <span class="nav-label">Route</span>
+      </button>
+      <button class="nav-item" data-tab="tab-sentinel">
+        <span class="nav-icon">⏰</span>
+        <span class="nav-label">5m Alarms</span>
+      </button>
+      <button class="nav-item" data-tab="tab-live">
+        <span class="nav-icon">🌦️</span>
+        <span class="nav-label">Radar</span>
+      </button>
+      <button class="nav-item" data-tab="tab-profile">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">Profile</span>
+      </button>
+    </nav>
+
   </div>
 
-  <!-- Interactive Tutorial / Onboarding Modal -->
+  <!-- Active Alarm Flashing Overlay Modal -->
+  <div class="alarm-overlay" id="alarmOverlay">
+    <div class="alarm-modal-card">
+      <div class="alarm-pulse-bell">🚨</div>
+      <h2 class="alarm-modal-title">RAIN DETECTED ON ROUTE!</h2>
+      <p class="alarm-modal-desc" id="alarmModalDesc">
+        Rain showers detected at your upcoming stop. Please pull over safely or put on your rain gear!
+      </p>
+      <div class="alarm-modal-actions">
+        <button class="btn-dismiss-alarm" id="btnDismissAlarm">
+          ✋ Dismiss / I am Safe
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Tutorial Modal -->
   <div class="modal-overlay" id="tutorialModal">
     <div class="tutorial-card">
       <div class="tutorial-icon" id="tutIcon">🌧️</div>
-      <h2 style="font-size: 1.15rem; font-weight: 700; text-align: center;" id="tutTitle">Welcome to MazhaiAlarm</h2>
-      <p style="font-size: 0.86rem; color: var(--text-muted); line-height: 1.5; text-align: center;" id="tutDesc">
-        Never get caught in sudden monsoon rains while covering your daily sales route in Tamil Nadu.
+      <h2 class="tut-title" id="tutTitle">Welcome to MazhaiAlarm</h2>
+      <p class="tut-desc" id="tutDesc">
+        Smart rain sentinel for field sales traveling across Tamil Nadu.
       </p>
-
       <div class="tutorial-dots" id="tutDots">
         <div class="dot active"></div>
         <div class="dot"></div>
         <div class="dot"></div>
         <div class="dot"></div>
       </div>
-
-      <div style="display: flex; gap: 10px; margin-top: 8px;">
-        <button class="btn-icon" id="btnSkipTut" style="flex: 1; justify-content: center;">Skip</button>
-        <button class="btn-primary" id="btnNextTut" style="flex: 2;">Next &rarr;</button>
+      <div class="tut-actions">
+        <button class="btn-tut-skip" id="btnSkipTut">Skip</button>
+        <button class="btn-tut-next" id="btnNextTut">Next &rarr;</button>
       </div>
     </div>
   </div>
 
-  <!-- App Logic Scripts -->
+  <!-- Application Logic -->
   <script src="weather.js"></script>
   <script src="routing.js"></script>
   <script src="alarm.js"></script>
