@@ -1,8 +1,10 @@
-// High-Precision Tamil Nadu Micro-Locality, Autocomplete & Corridor Routing Engine (100% Free)
+// High-Precision Tamil Nadu Micro-Locality, Autocomplete & Autonomous Corridor Routing Engine (100% Free)
 const RoutingEngine = {
-  // Comprehensive Micro-Locality Database with exact coordinates, regions, and search aliases
+  // Comprehensive Tamil Nadu Micro-Locality Database with exact coordinates, regions, and search aliases
   CORRIDOR_LOCALITIES: [
-    // --- North Chennai: Coastal Corridor ---
+    // =========================================================================
+    // 1. CHENNAI - NORTH & COASTAL CORRIDOR
+    // =========================================================================
     { 
       name: 'Ennore', 
       region: 'North Chennai (Coastal)', 
@@ -134,10 +136,12 @@ const RoutingEngine = {
       region: 'North Chennai (Coastal)', 
       lat: 13.1000, 
       lon: 80.2690, 
-      aliases: ['basin bridge junction'] 
+      aliases: ['basin bridge junction', 'basin bridge station'] 
     },
 
-    // --- North Chennai: Manali / Minjur / Inland Corridor ---
+    // =========================================================================
+    // 2. CHENNAI - NORTH INLAND & INDUSTRIAL
+    // =========================================================================
     { 
       name: 'Minjur', 
       region: 'North Chennai (Inland)', 
@@ -213,14 +217,14 @@ const RoutingEngine = {
       region: 'North Chennai (Inland)', 
       lat: 13.1990, 
       lon: 80.1970, 
-      aliases: ['redhills', 'semmaneri redhills', 'red hills bus terminus'] 
+      aliases: ['redhills', 'red hills bus terminus', 'padiyanallur'] 
     },
     { 
       name: 'Puzhal', 
       region: 'North Chennai (Inland)', 
       lat: 13.1580, 
       lon: 80.1980, 
-      aliases: ['puzhal camp', 'puzhal jail'] 
+      aliases: ['puzhal camp', 'puzhal jail', 'puzhal lake'] 
     },
     { 
       name: 'Kolathur', 
@@ -234,7 +238,28 @@ const RoutingEngine = {
       region: 'North Chennai (Inland)', 
       lat: 13.1320, 
       lon: 80.2080, 
-      aliases: ['retteri junction', 'retteri bridge'] 
+      aliases: ['retteri junction', 'retteri bridge', 'retteri flyover'] 
+    },
+    { 
+      name: 'Villivakkam', 
+      region: 'North Chennai (Inland)', 
+      lat: 13.1090, 
+      lon: 80.2080, 
+      aliases: ['villivakkam bus stand', 'villivakkam station'] 
+    },
+    { 
+      name: 'Korattur', 
+      region: 'North Chennai (Inland)', 
+      lat: 13.1130, 
+      lon: 80.1830, 
+      aliases: ['korattur railway station', 'korattur lake'] 
+    },
+    { 
+      name: 'Padi', 
+      region: 'North Chennai (Inland)', 
+      lat: 13.0980, 
+      lon: 80.1870, 
+      aliases: ['padi flyover', 'lucas tvs', 'padi junction'] 
     },
     { 
       name: 'Perambur', 
@@ -255,10 +280,12 @@ const RoutingEngine = {
       region: 'North Chennai (Inland)', 
       lat: 13.1250, 
       lon: 80.2580, 
-      aliases: ['mkb nagar depot'] 
+      aliases: ['mkb nagar depot', 'vyasarpadi mkb nagar'] 
     },
 
-    // --- Central Chennai Corridors ---
+    // =========================================================================
+    // 3. CHENNAI - CENTRAL & COMMERCIAL
+    // =========================================================================
     { 
       name: 'Parrys / Broadway', 
       region: 'Central Chennai', 
@@ -292,7 +319,7 @@ const RoutingEngine = {
       region: 'Central Chennai', 
       lat: 13.0760, 
       lon: 80.2710, 
-      aliases: ['chintadripet mrts'] 
+      aliases: ['chintadripet mrts', 'chindatripet'] 
     },
     { 
       name: 'Triplicane', 
@@ -323,6 +350,20 @@ const RoutingEngine = {
       aliases: ['mandaveli bus depot', 'mandavelli'] 
     },
     { 
+      name: 'Santhome', 
+      region: 'Central Chennai', 
+      lat: 13.0310, 
+      lon: 80.2780, 
+      aliases: ['santhome basilica', 'santhome church'] 
+    },
+    { 
+      name: 'Marina Beach', 
+      region: 'Central Chennai', 
+      lat: 13.0500, 
+      lon: 80.2820, 
+      aliases: ['marina', 'kamarajar salai'] 
+    },
+    { 
       name: 'Thousand Lights', 
       region: 'Central Chennai', 
       lat: 13.0590, 
@@ -337,6 +378,27 @@ const RoutingEngine = {
       aliases: ['nungambakkam high road', 'sterling road'] 
     },
     { 
+      name: 'Chetpet', 
+      region: 'Central Chennai', 
+      lat: 13.0710, 
+      lon: 80.2410, 
+      aliases: ['chetpet railway station', 'chetpet eco park'] 
+    },
+    { 
+      name: 'Kilpauk', 
+      region: 'Central Chennai', 
+      lat: 13.0810, 
+      lon: 80.2370, 
+      aliases: ['kilpauk medical college', 'kilpauk water works'] 
+    },
+    { 
+      name: 'Purasawalkam', 
+      region: 'Central Chennai', 
+      lat: 13.0870, 
+      lon: 80.2530, 
+      aliases: ['purasawalkam high road', 'doveton'] 
+    },
+    { 
       name: 'T. Nagar', 
       region: 'Central Chennai', 
       lat: 13.0418, 
@@ -344,18 +406,32 @@ const RoutingEngine = {
       aliases: ['tnagar', 't nagar', 'thyagaraya nagar', 'panagal park', 't nagar bus terminus'] 
     },
     { 
-      name: 'Kodambakkam', 
-      region: 'Central Chennai', 
-      lat: 13.0510, 
-      lon: 80.2220, 
-      aliases: ['kodambakkam bridge'] 
-    },
-    { 
       name: 'West Mambalam', 
       region: 'Central Chennai', 
       lat: 13.0370, 
       lon: 80.2230, 
-      aliases: ['mambalam station', 'mambalam'] 
+      aliases: ['mambalam station', 'mambalam', 'west mambalam post office'] 
+    },
+    { 
+      name: 'Kodambakkam', 
+      region: 'Central Chennai', 
+      lat: 13.0510, 
+      lon: 80.2220, 
+      aliases: ['kodambakkam bridge', 'kodambakkam railway station'] 
+    },
+    { 
+      name: 'Teynampet', 
+      region: 'Central Chennai', 
+      lat: 13.0400, 
+      lon: 80.2490, 
+      aliases: ['teynampet signal', 'siat college'] 
+    },
+    { 
+      name: 'Alwarpet', 
+      region: 'Central Chennai', 
+      lat: 13.0330, 
+      lon: 80.2500, 
+      aliases: ['alwarpet signal', 'ttkd road'] 
     },
     { 
       name: 'Saidapet', 
@@ -372,7 +448,279 @@ const RoutingEngine = {
       aliases: ['guindy industrial estate', 'guindy station', 'guindy race course'] 
     },
 
-    // --- OMR / South IT Expressway Corridor ---
+    // =========================================================================
+    // 4. CHENNAI - INNER RING ROAD, WEST & ARCOT ROAD
+    // =========================================================================
+    { 
+      name: 'Anna Nagar', 
+      region: 'West Chennai', 
+      lat: 13.0850, 
+      lon: 80.2100, 
+      aliases: ['anna nagar roundtana', 'anna nagar tower', 'anna nagar east', 'anna nagar west'] 
+    },
+    { 
+      name: 'Shenoy Nagar', 
+      region: 'West Chennai', 
+      lat: 13.0789, 
+      lon: 80.2251, 
+      aliases: ['shenoy nagar metro', 'thiru vi ka park'] 
+    },
+    { 
+      name: 'Aminjikarai', 
+      region: 'West Chennai', 
+      lat: 13.0720, 
+      lon: 80.2230, 
+      aliases: ['aminjikarai market', 'poonamallee high road aminjikarai'] 
+    },
+    { 
+      name: 'Arumbakkam', 
+      region: 'West Chennai', 
+      lat: 13.0650, 
+      lon: 80.2080, 
+      aliases: ['arumbakkam metro', 'dg vaishnav college'] 
+    },
+    { 
+      name: 'Koyambedu', 
+      region: 'West Chennai', 
+      lat: 13.0694, 
+      lon: 80.1948, 
+      aliases: ['cmbt', 'koyambedu bus terminus', 'koyambedu market', 'koyambedu metro'] 
+    },
+    { 
+      name: 'Vadapalani', 
+      region: 'West Chennai', 
+      lat: 13.0500, 
+      lon: 80.2120, 
+      aliases: ['vadapalani murugan temple', 'vadapalani bus depot', 'nexus vijaya mall'] 
+    },
+    { 
+      name: 'Ashok Nagar', 
+      region: 'West Chennai', 
+      lat: 13.0370, 
+      lon: 80.2120, 
+      aliases: ['ashok pillar', 'ashok nagar metro'] 
+    },
+    { 
+      name: 'KK Nagar', 
+      region: 'West Chennai', 
+      lat: 13.0390, 
+      lon: 80.1980, 
+      aliases: ['k k nagar bus depot', 'esi hospital kk nagar'] 
+    },
+    { 
+      name: 'Jafferkhanpet', 
+      region: 'West Chennai', 
+      lat: 13.0280, 
+      lon: 80.2050, 
+      aliases: ['jafferkhanpet bridge', 'kasi bridge'] 
+    },
+    { 
+      name: 'Ekkattuthangal', 
+      region: 'West Chennai', 
+      lat: 13.0200, 
+      lon: 80.2040, 
+      aliases: ['ekkattuthangal metro', 'cipet'] 
+    },
+    { 
+      name: 'Alandur', 
+      region: 'West Chennai', 
+      lat: 13.0030, 
+      lon: 80.2010, 
+      aliases: ['alandur metro', 'alandur court'] 
+    },
+    { 
+      name: 'St. Thomas Mount', 
+      region: 'West Chennai / GST', 
+      lat: 12.9980, 
+      lon: 80.1950, 
+      aliases: ['st thomas mount railway station', 'mount metro', 'butt road'] 
+    },
+    { 
+      name: 'Kathipara', 
+      region: 'West Chennai / GST', 
+      lat: 13.0070, 
+      lon: 80.2030, 
+      aliases: ['kathipara flyover', 'kathipara cloverleaf', 'guindy kathipara'] 
+    },
+    { 
+      name: 'Virugambakkam', 
+      region: 'West Chennai', 
+      lat: 13.0530, 
+      lon: 80.1920, 
+      aliases: ['virugambakkam market'] 
+    },
+    { 
+      name: 'Saligramam', 
+      region: 'West Chennai', 
+      lat: 13.0540, 
+      lon: 80.2010, 
+      aliases: ['prasad studios', 'saligramam bus stop'] 
+    },
+    { 
+      name: 'Valasaravakkam', 
+      region: 'West Chennai', 
+      lat: 13.0480, 
+      lon: 80.1780, 
+      aliases: ['valasaravakkam signal', 'arcot road valasaravakkam'] 
+    },
+    { 
+      name: 'Alwarthirunagar', 
+      region: 'West Chennai', 
+      lat: 13.0440, 
+      lon: 80.1720, 
+      aliases: ['alwar thirunagar'] 
+    },
+    { 
+      name: 'Porur', 
+      region: 'West Chennai', 
+      lat: 13.0382, 
+      lon: 80.1565, 
+      aliases: ['porur roundtana', 'porur junction', 'sri ramachandra hospital', 'porur flyover'] 
+    },
+    { 
+      name: 'Ramapuram', 
+      region: 'West Chennai', 
+      lat: 13.0314, 
+      lon: 80.1789, 
+      aliases: ['srm ramapuram', 'dlf it park', 'ramapuram signal'] 
+    },
+    { 
+      name: 'Mugalivakkam', 
+      region: 'West Chennai', 
+      lat: 13.0250, 
+      lon: 80.1680, 
+      aliases: ['mugalivakkam dlf'] 
+    },
+    { 
+      name: 'Manapakkam', 
+      region: 'West Chennai', 
+      lat: 13.0180, 
+      lon: 80.1750, 
+      aliases: ['l&t manapakkam', 'miat hospital manapakkam'] 
+    },
+    { 
+      name: 'Iyyappanthangal', 
+      region: 'West Chennai', 
+      lat: 13.0390, 
+      lon: 80.1380, 
+      aliases: ['iyyappanthangal bus depot', 'srmc gate'] 
+    },
+    { 
+      name: 'Kumananchavadi', 
+      region: 'West Chennai', 
+      lat: 13.0450, 
+      lon: 80.1180, 
+      aliases: ['kumananchavadi signal', 'kumananchavadi junction'] 
+    },
+    { 
+      name: 'Poonamallee', 
+      region: 'West Chennai', 
+      lat: 13.0487, 
+      lon: 80.1054, 
+      aliases: ['poonamallee bus terminus', 'poonamallee bypass'] 
+    },
+    { 
+      name: 'Mangadu', 
+      region: 'West Chennai', 
+      lat: 13.0390, 
+      lon: 80.1100, 
+      aliases: ['mangadu kamakshi amman temple'] 
+    },
+    { 
+      name: 'Kundrathur', 
+      region: 'West Chennai', 
+      lat: 12.9980, 
+      lon: 80.0980, 
+      aliases: ['kundrathur murugan temple'] 
+    },
+    { 
+      name: 'Maduravoyal', 
+      region: 'West Chennai', 
+      lat: 13.0630, 
+      lon: 80.1620, 
+      aliases: ['maduravoyal flyover', 'maduravoyal bypass', 'erierikarai'] 
+    },
+    { 
+      name: 'Vanagaram', 
+      region: 'West Chennai', 
+      lat: 13.0620, 
+      lon: 80.1450, 
+      aliases: ['vanagaram apollo', 'vanagaram toll plaza'] 
+    },
+    { 
+      name: 'Nolambur', 
+      region: 'West Chennai', 
+      lat: 13.0760, 
+      lon: 80.1620, 
+      aliases: ['nolambur phase 2'] 
+    },
+    { 
+      name: 'Mogappair', 
+      region: 'West Chennai', 
+      lat: 13.0840, 
+      lon: 80.1750, 
+      aliases: ['mogappair east', 'mogappair west', 'golden flats', 'spartan school'] 
+    },
+    { 
+      name: 'Ambattur Estate', 
+      region: 'West Chennai', 
+      lat: 13.0980, 
+      lon: 80.1620, 
+      aliases: ['ambattur industrial estate', 'ambattur ot', 'telephone exchange ambattur'] 
+    },
+    { 
+      name: 'Ambattur', 
+      region: 'West Chennai', 
+      lat: 13.1143, 
+      lon: 80.1548, 
+      aliases: ['ambattur railway station', 'ti cycles', 'ambattur market'] 
+    },
+    { 
+      name: 'Avadi', 
+      region: 'West Chennai', 
+      lat: 13.1147, 
+      lon: 80.1018, 
+      aliases: ['avadi checkpost', 'avadi bus terminus', 'hvf avadi', 'avadi railway station'] 
+    },
+    { 
+      name: 'Pattabiram', 
+      region: 'West Chennai', 
+      lat: 13.1230, 
+      lon: 80.0620, 
+      aliases: ['pattabiram military siding'] 
+    },
+    { 
+      name: 'Thiruninravur', 
+      region: 'West Chennai', 
+      lat: 13.1200, 
+      lon: 80.0270, 
+      aliases: ['thiruninravur railway station'] 
+    },
+    { 
+      name: 'Sriperumbudur', 
+      region: 'West Industrial Corridor', 
+      lat: 12.9699, 
+      lon: 79.9482, 
+      aliases: ['sriperumbudur sipcot', 'hyundai sriperumbudur', 'sriperumbudur toll'] 
+    },
+    { 
+      name: 'Walajabad', 
+      region: 'Kanchipuram District', 
+      lat: 12.7918, 
+      lon: 79.8284, 
+      aliases: ['walajabad bus stand', 'walajabad bypass'] 
+    },
+    { 
+      name: 'Kanchipuram', 
+      region: 'Kanchipuram District', 
+      lat: 12.8340, 
+      lon: 79.7030, 
+      aliases: ['kanjeevaram', 'kanchi', 'kanchipuram bus stand', 'kamakshi amman temple'] 
+    },
+
+    // =========================================================================
+    // 5. CHENNAI - OMR IT EXPRESSWAY & ECR COASTAL
+    // =========================================================================
     { 
       name: 'Adyar', 
       region: 'OMR IT Corridor', 
@@ -399,7 +747,21 @@ const RoutingEngine = {
       region: 'OMR IT Corridor', 
       lat: 12.9830, 
       lon: 80.2594, 
-      aliases: ['thiruvanmiyur bus terminus', 'thiruvanmiyur signal'] 
+      aliases: ['thiruvanmiyur bus terminus', 'thiruvanmiyur signal', 'marundeeswarar temple'] 
+    },
+    { 
+      name: 'Besant Nagar', 
+      region: 'South Chennai / ECR', 
+      lat: 13.0000, 
+      lon: 80.2660, 
+      aliases: ['elliots beach', 'bessie beach', 'velankanni church besant nagar'] 
+    },
+    { 
+      name: 'Taramani', 
+      region: 'OMR IT Corridor', 
+      lat: 12.9860, 
+      lon: 80.2430, 
+      aliases: ['taramani mrts', 'ascendas it park'] 
     },
     { 
       name: 'Tidel Park', 
@@ -500,6 +862,13 @@ const RoutingEngine = {
       aliases: ['kazhipatur'] 
     },
     { 
+      name: 'Padur', 
+      region: 'OMR IT Corridor', 
+      lat: 12.8120, 
+      lon: 80.2210, 
+      aliases: ['padur junction'] 
+    },
+    { 
       name: 'Pudupakkam', 
       region: 'OMR IT Corridor', 
       lat: 12.8050, 
@@ -519,85 +888,6 @@ const RoutingEngine = {
       lat: 12.7230, 
       lon: 80.1915, 
       aliases: ['tiruporur', 'thiruporur murugan temple'] 
-    },
-
-    // --- Velachery / Medavakkam / Pallikaranai Corridor ---
-    { 
-      name: 'Velachery', 
-      region: 'Velachery / Medavakkam', 
-      lat: 12.9815, 
-      lon: 80.2180, 
-      aliases: ['velachery mrts', 'phoenix marketcity', 'velachery bus terminus'] 
-    },
-    { 
-      name: 'Vijayanagar (Velachery)', 
-      region: 'Velachery / Medavakkam', 
-      lat: 12.9780, 
-      lon: 80.2190, 
-      aliases: ['vijayanagar bus stop', 'vijayanagar junction'] 
-    },
-    { 
-      name: 'Kaiveli', 
-      region: 'Velachery / Medavakkam', 
-      lat: 12.9570, 
-      lon: 80.2150, 
-      aliases: ['kaiveli junction', 'kaiveli signal'] 
-    },
-    { 
-      name: 'Pallikaranai', 
-      region: 'Velachery / Medavakkam', 
-      lat: 12.9348, 
-      lon: 80.2137, 
-      aliases: ['pallikaranai marshland', 'pallikaranai oil mill'] 
-    },
-    { 
-      name: 'Narayanapuram', 
-      region: 'Velachery / Medavakkam', 
-      lat: 12.9310, 
-      lon: 80.2080, 
-      aliases: ['narayanapuram lake'] 
-    },
-    { 
-      name: 'Kovilambakkam', 
-      region: 'Velachery / Medavakkam', 
-      lat: 12.9300, 
-      lon: 80.1900, 
-      aliases: ['kovilambakkam junction'] 
-    },
-    { 
-      name: 'Medavakkam Koot Road', 
-      region: 'Velachery / Medavakkam', 
-      lat: 12.9230, 
-      lon: 80.1910, 
-      aliases: ['medavakkam junction', 'medavakkam flyover'] 
-    },
-    { 
-      name: 'Medavakkam', 
-      region: 'Velachery / Medavakkam', 
-      lat: 12.9197, 
-      lon: 80.1878, 
-      aliases: ['medavakkam town', 'medavakkam bus stop'] 
-    },
-    { 
-      name: 'Perumbakkam', 
-      region: 'Velachery / Medavakkam', 
-      lat: 12.9000, 
-      lon: 80.1950, 
-      aliases: ['perumbakkam housing board', 'global hospital'] 
-    },
-    { 
-      name: 'Sithalapakkam', 
-      region: 'Velachery / Medavakkam', 
-      lat: 12.8800, 
-      lon: 80.1880, 
-      aliases: ['sithalapakkam lake'] 
-    },
-    { 
-      name: 'Mambakkam', 
-      region: 'Velachery / Medavakkam', 
-      lat: 12.8300, 
-      lon: 80.1550, 
-      aliases: ['mambakkam junction'] 
     },
 
     // --- ECR Coastal Corridor ---
@@ -686,20 +976,141 @@ const RoutingEngine = {
       aliases: ['mamallapuram', 'shore temple', 'mahabs'] 
     },
 
-    // --- GST Road Corridor ---
+    // =========================================================================
+    // 6. CHENNAI - VELACHERY, MEDAVAKKAM & GST SOUTH SUBURBS
+    // =========================================================================
     { 
-      name: 'Kathipara', 
-      region: 'GST Corridor', 
-      lat: 13.0070, 
-      lon: 80.2030, 
-      aliases: ['kathipara flyover', 'kathipara cloverleaf', 'guindy kathipara'] 
+      name: 'Velachery', 
+      region: 'Velachery / Medavakkam', 
+      lat: 12.9815, 
+      lon: 80.2180, 
+      aliases: ['velachery mrts', 'phoenix marketcity', 'velachery bus terminus'] 
     },
     { 
-      name: 'St. Thomas Mount', 
-      region: 'GST Corridor', 
-      lat: 12.9980, 
+      name: 'Vijayanagar (Velachery)', 
+      region: 'Velachery / Medavakkam', 
+      lat: 12.9780, 
+      lon: 80.2190, 
+      aliases: ['vijayanagar bus stop', 'vijayanagar junction'] 
+    },
+    { 
+      name: 'Kaiveli', 
+      region: 'Velachery / Medavakkam', 
+      lat: 12.9570, 
+      lon: 80.2150, 
+      aliases: ['kaiveli junction', 'kaiveli signal'] 
+    },
+    { 
+      name: 'Madipakkam', 
+      region: 'Velachery / Medavakkam', 
+      lat: 12.9620, 
+      lon: 80.1980, 
+      aliases: ['madipakkam koot road', 'madipakkam bus stand', 'madippakkam'] 
+    },
+    { 
+      name: 'Nanganallur', 
+      region: 'Velachery / GST', 
+      lat: 12.9810, 
+      lon: 80.1910, 
+      aliases: ['nanganallur anjaneyar temple', 'nanganallur market'] 
+    },
+    { 
+      name: 'Keelkattalai', 
+      region: 'Velachery / Medavakkam', 
+      lat: 12.9540, 
+      lon: 80.1870, 
+      aliases: ['keelkattalai signal', 'keelkattalai bus terminus'] 
+    },
+    { 
+      name: 'Kovilambakkam', 
+      region: 'Velachery / Medavakkam', 
+      lat: 12.9300, 
+      lon: 80.1900, 
+      aliases: ['kovilambakkam junction'] 
+    },
+    { 
+      name: 'Nanmangalam', 
+      region: 'Velachery / Medavakkam', 
+      lat: 12.9370, 
+      lon: 80.1780, 
+      aliases: ['nanmangalam reserve forest'] 
+    },
+    { 
+      name: 'Pallikaranai', 
+      region: 'Velachery / Medavakkam', 
+      lat: 12.9348, 
+      lon: 80.2137, 
+      aliases: ['pallikaranai marshland', 'pallikaranai oil mill'] 
+    },
+    { 
+      name: 'Narayanapuram', 
+      region: 'Velachery / Medavakkam', 
+      lat: 12.9310, 
+      lon: 80.2080, 
+      aliases: ['narayanapuram lake'] 
+    },
+    { 
+      name: 'Medavakkam Koot Road', 
+      region: 'Velachery / Medavakkam', 
+      lat: 12.9230, 
+      lon: 80.1910, 
+      aliases: ['medavakkam junction', 'medavakkam flyover'] 
+    },
+    { 
+      name: 'Medavakkam', 
+      region: 'Velachery / Medavakkam', 
+      lat: 12.9197, 
+      lon: 80.1878, 
+      aliases: ['medavakkam town', 'medavakkam bus stop'] 
+    },
+    { 
+      name: 'Perumbakkam', 
+      region: 'Velachery / Medavakkam', 
+      lat: 12.9000, 
       lon: 80.1950, 
-      aliases: ['st thomas mount railway station', 'mount metro'] 
+      aliases: ['perumbakkam housing board', 'global hospital'] 
+    },
+    { 
+      name: 'Sithalapakkam', 
+      region: 'Velachery / Medavakkam', 
+      lat: 12.8800, 
+      lon: 80.1880, 
+      aliases: ['sithalapakkam lake'] 
+    },
+    { 
+      name: 'Sembakkam', 
+      region: 'Velachery / Tambaram', 
+      lat: 12.9230, 
+      lon: 80.1580, 
+      aliases: ['sembakkam bus stop'] 
+    },
+    { 
+      name: 'Hasthinapuram', 
+      region: 'Velachery / Chromepet', 
+      lat: 12.9420, 
+      lon: 80.1580, 
+      aliases: ['hasthinapuram bus terminus'] 
+    },
+    { 
+      name: 'Chitlapakkam', 
+      region: 'Velachery / Chromepet', 
+      lat: 12.9360, 
+      lon: 80.1450, 
+      aliases: ['chitlapakkam lake'] 
+    },
+    { 
+      name: 'Selaiyur', 
+      region: 'Tambaram / Suburbs', 
+      lat: 12.9180, 
+      lon: 80.1380, 
+      aliases: ['selaiyur police station'] 
+    },
+    { 
+      name: 'Camp Road', 
+      region: 'Tambaram / Suburbs', 
+      lat: 12.9150, 
+      lon: 80.1330, 
+      aliases: ['camp road junction', 'selaiyur camp road'] 
     },
     { 
       name: 'Meenambakkam', 
@@ -720,7 +1131,7 @@ const RoutingEngine = {
       region: 'GST Corridor', 
       lat: 12.9675, 
       lon: 80.1491, 
-      aliases: ['pallavaram flyover', 'pallavaram bus stand'] 
+      aliases: ['pallavaram flyover', 'pallavaram bus stand', 'pallavaram market'] 
     },
     { 
       name: 'Chromepet', 
@@ -734,35 +1145,49 @@ const RoutingEngine = {
       region: 'GST Corridor', 
       lat: 12.9380, 
       lon: 80.1250, 
-      aliases: ['tambaram sanatorium', 'tb hospital'] 
+      aliases: ['tambaram sanatorium', 'tb hospital', 'mepz'] 
     },
     { 
       name: 'Tambaram', 
       region: 'GST Corridor', 
       lat: 12.9249, 
       lon: 80.1000, 
-      aliases: ['tambaram railway station', 'tambaram bus stand', 'tambaram market'] 
+      aliases: ['tambaram railway station', 'tambaram bus stand', 'tambaram market', 'tambaram west', 'tambaram east'] 
     },
     { 
       name: 'Perungalathur', 
       region: 'GST Corridor', 
       lat: 12.9050, 
       lon: 80.0880, 
-      aliases: ['perungalathur bus stop', 'perungalathur bypass'] 
+      aliases: ['perungalathur bus stop', 'perungalathur bypass', 'perungalathur station'] 
     },
     { 
       name: 'Vandalur', 
       region: 'GST Corridor', 
       lat: 12.8910, 
       lon: 80.0810, 
-      aliases: ['vandalur zoo', 'crescent college', 'vandalur bridge'] 
+      aliases: ['vandalur zoo', 'crescent college', 'vandalur bridge', 'vandalur railway station'] 
+    },
+    { 
+      name: 'Urapakkam', 
+      region: 'GST Corridor', 
+      lat: 12.8680, 
+      lon: 80.0720, 
+      aliases: ['urapakkam railway station'] 
     },
     { 
       name: 'Guduvancheri', 
       region: 'GST Corridor', 
       lat: 12.8430, 
       lon: 80.0630, 
-      aliases: ['guduvanchery bus terminus'] 
+      aliases: ['guduvanchery bus terminus', 'guduvanchery railway station'] 
+    },
+    { 
+      name: 'Potheri', 
+      region: 'GST Corridor', 
+      lat: 12.8230, 
+      lon: 80.0430, 
+      aliases: ['srm university potheri', 'potheri railway station'] 
     },
     { 
       name: 'Maraimalai Nagar', 
@@ -785,107 +1210,386 @@ const RoutingEngine = {
       lon: 79.9836, 
       aliases: ['chengalpet', 'chengalpattu junction', 'chengalpattu old bus stand'] 
     },
-
-    // --- West Corridor / Poonamallee / Ambattur ---
     { 
-      name: 'Koyambedu', 
-      region: 'West Chennai', 
-      lat: 13.0694, 
-      lon: 80.1948, 
-      aliases: ['cmbt', 'koyambedu bus terminus', 'koyambedu market', 'koyambedu metro'] 
+      name: 'Padappai', 
+      region: 'South Industrial Corridor', 
+      lat: 12.8800, 
+      lon: 80.0200, 
+      aliases: ['padappai junction'] 
     },
     { 
-      name: 'Maduravoyal', 
-      region: 'West Chennai', 
-      lat: 13.0630, 
-      lon: 80.1620, 
-      aliases: ['maduravoyal flyover', 'maduravoyal bypass'] 
-    },
-    { 
-      name: 'Porur', 
-      region: 'West Chennai', 
-      lat: 13.0382, 
-      lon: 80.1565, 
-      aliases: ['porur roundtana', 'porur junction', 'sri ramachandra hospital'] 
-    },
-    { 
-      name: 'Iyyappanthangal', 
-      region: 'West Chennai', 
-      lat: 13.0390, 
-      lon: 80.1380, 
-      aliases: ['iyyappanthangal bus depot'] 
-    },
-    { 
-      name: 'Kumananchavadi', 
-      region: 'West Chennai', 
-      lat: 13.0450, 
-      lon: 80.1180, 
-      aliases: ['kumananchavadi signal'] 
-    },
-    { 
-      name: 'Poonamallee', 
-      region: 'West Chennai', 
-      lat: 13.0487, 
-      lon: 80.1054, 
-      aliases: ['poonamallee bus terminus', 'poonamallee bypass'] 
-    },
-    { 
-      name: 'Mogappair', 
-      region: 'West Chennai', 
-      lat: 13.0840, 
-      lon: 80.1750, 
-      aliases: ['mogappair east', 'mogappair west', 'golden flats'] 
-    },
-    { 
-      name: 'Ambattur Estate', 
-      region: 'West Chennai', 
-      lat: 13.0980, 
-      lon: 80.1620, 
-      aliases: ['ambattur industrial estate', 'ambattur ot'] 
-    },
-    { 
-      name: 'Ambattur', 
-      region: 'West Chennai', 
-      lat: 13.1143, 
-      lon: 80.1548, 
-      aliases: ['ambattur railway station', 'ti cycles'] 
-    },
-    { 
-      name: 'Avadi', 
-      region: 'West Chennai', 
-      lat: 13.1147, 
-      lon: 80.1018, 
-      aliases: ['avadi checkpost', 'avadi bus terminus', 'hvf avadi'] 
-    },
-    { 
-      name: 'Sriperumbudur', 
-      region: 'West Chennai', 
-      lat: 12.9699, 
-      lon: 79.9482, 
-      aliases: ['sriperumbudur sipcot', 'hyundai sriperumbudur'] 
-    },
-    { 
-      name: 'Kanchipuram', 
-      region: 'Tamil Nadu Major Hubs', 
-      lat: 12.8340, 
-      lon: 79.7030, 
-      aliases: ['kanjeevaram', 'kanchi'] 
+      name: 'Oragadam', 
+      region: 'South Industrial Corridor', 
+      lat: 12.8300, 
+      lon: 79.9500, 
+      aliases: ['oragadam sipcot', 'oragadam junction'] 
     },
 
-    // --- Major Tamil Nadu Hubs ---
-    { name: 'Coimbatore', region: 'Tamil Nadu Major Hubs', lat: 11.0168, lon: 76.9558, aliases: ['kovai', 'gandhipuram'] },
-    { name: 'Madurai', region: 'Tamil Nadu Major Hubs', lat: 9.9252, lon: 78.1198, aliases: ['mattuthavani', 'meenakshi amman temple'] },
-    { name: 'Tiruchirappalli', region: 'Tamil Nadu Major Hubs', lat: 10.7905, lon: 78.7047, aliases: ['trichy', 'thillai nagar', 'central bus stand trichy'] },
-    { name: 'Salem', region: 'Tamil Nadu Major Hubs', lat: 11.6643, lon: 78.1460, aliases: ['salem new bus stand'] },
-    { name: 'Tirunelveli', region: 'Tamil Nadu Major Hubs', lat: 8.7139, lon: 77.7567, aliases: ['nellai', 'palayamkottai'] },
-    { name: 'Erode', region: 'Tamil Nadu Major Hubs', lat: 11.3410, lon: 77.7172, aliases: ['erode bus stand'] },
-    { name: 'Tiruppur', region: 'Tamil Nadu Major Hubs', lat: 11.1085, lon: 77.3411, aliases: ['tirupur'] },
-    { name: 'Vellore', region: 'Tamil Nadu Major Hubs', lat: 12.9165, lon: 79.1325, aliases: ['cmc vellore', 'vellore fort'] },
-    { name: 'Hosur', region: 'Tamil Nadu Major Hubs', lat: 12.7409, lon: 77.8253, aliases: ['hosur bus stand'] },
-    { name: 'Thanjavur', region: 'Tamil Nadu Major Hubs', lat: 10.7870, lon: 79.1378, aliases: ['tanjore', 'brihadeeswarar temple'] },
-    { name: 'Dindigul', region: 'Tamil Nadu Major Hubs', lat: 10.3673, lon: 77.9803, aliases: ['dindigul bus stand'] },
-    { name: 'Nagercoil', region: 'Tamil Nadu Major Hubs', lat: 8.1833, lon: 77.4119, aliases: ['kanyakumari', 'vadasery'] },
-    { name: 'Cuddalore', region: 'Tamil Nadu Major Hubs', lat: 11.7480, lon: 79.7714, aliases: ['cuddalore port'] }
+    // =========================================================================
+    // 7. COIMBATORE & SUBURBS
+    // =========================================================================
+    { 
+      name: 'Gandhipuram', 
+      region: 'Coimbatore', 
+      lat: 11.0183, 
+      lon: 76.9678, 
+      aliases: ['gandhipuram bus stand', 'gandhipuram central', 'coimbatore central'] 
+    },
+    { 
+      name: 'Ukkadam', 
+      region: 'Coimbatore', 
+      lat: 10.9900, 
+      lon: 76.9600, 
+      aliases: ['ukkadam bus stand', 'ukkadam lake'] 
+    },
+    { 
+      name: 'RS Puram', 
+      region: 'Coimbatore', 
+      lat: 11.0080, 
+      lon: 76.9500, 
+      aliases: ['r s puram', 'db road rs puram'] 
+    },
+    { 
+      name: 'Peelamedu', 
+      region: 'Coimbatore', 
+      lat: 11.0280, 
+      lon: 77.0100, 
+      aliases: ['psg tech peelamedu', 'coimbatore airport peelamedu'] 
+    },
+    { 
+      name: 'Hopes College', 
+      region: 'Coimbatore', 
+      lat: 11.0250, 
+      lon: 77.0020, 
+      aliases: ['hopes', 'avinashi road hopes'] 
+    },
+    { 
+      name: 'Singanallur', 
+      region: 'Coimbatore', 
+      lat: 10.9950, 
+      lon: 77.0250, 
+      aliases: ['singanallur bus stand', 'singanallur lake'] 
+    },
+    { 
+      name: 'Saravanampatti', 
+      region: 'Coimbatore', 
+      lat: 11.0805, 
+      lon: 76.9958, 
+      aliases: ['saravanampatty', 'kgi tech campus', 'chill seve saravanampatti'] 
+    },
+    { 
+      name: 'Ganapathy', 
+      region: 'Coimbatore', 
+      lat: 11.0380, 
+      lon: 76.9800, 
+      aliases: ['ganapathy bus stop', 'sathy road ganapathy'] 
+    },
+    { 
+      name: 'Saibaba Colony', 
+      region: 'Coimbatore', 
+      lat: 11.0250, 
+      lon: 76.9450, 
+      aliases: ['saibaba temple', 'nsr road'] 
+    },
+    { 
+      name: 'Thudiyalur', 
+      region: 'Coimbatore', 
+      lat: 11.0800, 
+      lon: 76.9380, 
+      aliases: ['thudiyalur junction', 'mettupalayam road thudiyalur'] 
+    },
+    { 
+      name: 'Kovaipudur', 
+      region: 'Coimbatore', 
+      lat: 10.9380, 
+      lon: 76.9350, 
+      aliases: ['kovai pudur'] 
+    },
+    { 
+      name: 'Pollachi', 
+      region: 'Coimbatore District', 
+      lat: 10.6609, 
+      lon: 77.0048, 
+      aliases: ['pollachi bus stand', 'pollachi town'] 
+    },
+    { 
+      name: 'Sulur', 
+      region: 'Coimbatore District', 
+      lat: 11.0240, 
+      lon: 77.1260, 
+      aliases: ['sulur air force base', 'sulur bus stand'] 
+    },
+
+    // =========================================================================
+    // 8. MADURAI & SUBURBS
+    // =========================================================================
+    { 
+      name: 'Mattuthavani', 
+      region: 'Madurai', 
+      lat: 9.9477, 
+      lon: 78.1569, 
+      aliases: ['mattuthavani bus stand', 'integrated bus stand madurai', 'mgr bus stand madurai'] 
+    },
+    { 
+      name: 'Periyar Bus Stand', 
+      region: 'Madurai', 
+      lat: 9.9170, 
+      lon: 78.1140, 
+      aliases: ['periyar bus stand madurai', 'madurai junction station'] 
+    },
+    { 
+      name: 'Goripalayam', 
+      region: 'Madurai', 
+      lat: 9.9320, 
+      lon: 78.1310, 
+      aliases: ['goripalayam mosque', 'goripalayam junction'] 
+    },
+    { 
+      name: 'Simmakkal', 
+      region: 'Madurai', 
+      lat: 9.9280, 
+      lon: 78.1250, 
+      aliases: ['simmakkal ground'] 
+    },
+    { 
+      name: 'Tallakulam', 
+      region: 'Madurai', 
+      lat: 9.9360, 
+      lon: 78.1380, 
+      aliases: ['tallakulam outhouse', 'tallakulam post office'] 
+    },
+    { 
+      name: 'Anna Nagar (Madurai)', 
+      region: 'Madurai', 
+      lat: 9.9210, 
+      lon: 78.1480, 
+      aliases: ['anna nagar madurai', 'ambika theatre'] 
+    },
+    { 
+      name: 'Arapalayam', 
+      region: 'Madurai', 
+      lat: 9.9360, 
+      lon: 78.1060, 
+      aliases: ['arapalayam bus stand', 'guru theatre'] 
+    },
+    { 
+      name: 'Teppakulam', 
+      region: 'Madurai', 
+      lat: 9.9140, 
+      lon: 78.1520, 
+      aliases: ['vandiyur mariamman teppakulam'] 
+    },
+    { 
+      name: 'Thiruparankundram', 
+      region: 'Madurai', 
+      lat: 9.8763, 
+      lon: 78.0712, 
+      aliases: ['thiruparankundram murugan temple', 'thirupparankundram'] 
+    },
+    { 
+      name: 'Melur', 
+      region: 'Madurai District', 
+      lat: 10.0280, 
+      lon: 78.3360, 
+      aliases: ['melur bus stand'] 
+    },
+
+    // =========================================================================
+    // 9. TIRUCHIRAPPALLI (TRICHY) & SUBURBS
+    // =========================================================================
+    { 
+      name: 'Central Bus Stand (Trichy)', 
+      region: 'Tiruchirappalli', 
+      lat: 10.7930, 
+      lon: 78.6870, 
+      aliases: ['trichy central', 'central bus stand trichy', 'trichy junction'] 
+    },
+    { 
+      name: 'Chathiram Bus Stand', 
+      region: 'Tiruchirappalli', 
+      lat: 10.8320, 
+      lon: 78.6940, 
+      aliases: ['chathiram bus stand trichy', 'st joseph college trichy'] 
+    },
+    { 
+      name: 'Thillai Nagar', 
+      region: 'Tiruchirappalli', 
+      lat: 10.8220, 
+      lon: 78.6870, 
+      aliases: ['thillai nagar main road', 'thillainagar'] 
+    },
+    { 
+      name: 'Srirangam', 
+      region: 'Tiruchirappalli', 
+      lat: 10.8620, 
+      lon: 78.6900, 
+      aliases: ['srirangam ranganathar temple', 'srirangam rajagopuram'] 
+    },
+    { 
+      name: 'Cantonment', 
+      region: 'Tiruchirappalli', 
+      lat: 10.8060, 
+      lon: 78.6850, 
+      aliases: ['cantonment trichy'] 
+    },
+    { 
+      name: 'Thuvakudi', 
+      region: 'Tiruchirappalli', 
+      lat: 10.7550, 
+      lon: 78.8050, 
+      aliases: ['nit trichy thuvakudi', 'thuvakudi toll'] 
+    },
+
+    // =========================================================================
+    // 10. SALEM & SUBURBS
+    // =========================================================================
+    { 
+      name: 'Salem New Bus Stand', 
+      region: 'Salem', 
+      lat: 11.6680, 
+      lon: 78.1460, 
+      aliases: ['salem new bus stand', 'meyyanur', 'salem central'] 
+    },
+    { 
+      name: 'Fairlands', 
+      region: 'Salem', 
+      lat: 11.6780, 
+      lon: 78.1450, 
+      aliases: ['fairlands salem'] 
+    },
+    { 
+      name: 'Hasthampatti', 
+      region: 'Salem', 
+      lat: 11.6750, 
+      lon: 78.1630, 
+      aliases: ['hasthampatti roundtana'] 
+    },
+    { 
+      name: 'Salem Junction', 
+      region: 'Salem', 
+      lat: 11.6720, 
+      lon: 78.1180, 
+      aliases: ['salem railway station', 'suramangalam'] 
+    },
+
+    // =========================================================================
+    // 11. TIRUPPUR & SUBURBS
+    // =========================================================================
+    { 
+      name: 'Tiruppur Old Bus Stand', 
+      region: 'Tiruppur', 
+      lat: 11.1070, 
+      lon: 77.3460, 
+      aliases: ['tirupur old bus stand', 'tirupur railway station'] 
+    },
+    { 
+      name: 'Tiruppur New Bus Stand', 
+      region: 'Tiruppur', 
+      lat: 11.1270, 
+      lon: 77.3360, 
+      aliases: ['tirupur new bus stand', 'kottaipalayam'] 
+    },
+    { 
+      name: 'Avinashi', 
+      region: 'Tiruppur District', 
+      lat: 11.1920, 
+      lon: 77.2690, 
+      aliases: ['avinashi lingeshwarar temple', 'avinashi bus stand'] 
+    },
+
+    // =========================================================================
+    // 12. ERODE & SUBURBS
+    // =========================================================================
+    { 
+      name: 'Central Bus Stand (Erode)', 
+      region: 'Erode', 
+      lat: 11.3410, 
+      lon: 77.7172, 
+      aliases: ['erode bus stand', 'erode central', 'erode junction'] 
+    },
+    { 
+      name: 'Perundurai', 
+      region: 'Erode District', 
+      lat: 11.2780, 
+      lon: 77.5840, 
+      aliases: ['perundurai sipcot', 'perundurai bus stand'] 
+    },
+    { 
+      name: 'Bhavani', 
+      region: 'Erode District', 
+      lat: 11.4500, 
+      lon: 77.6830, 
+      aliases: ['bhavani sangameshwarar temple', 'bhavani bus stand'] 
+    },
+
+    // =========================================================================
+    // 13. VELLORE & SUBURBS
+    // =========================================================================
+    { 
+      name: 'New Bus Stand (Vellore)', 
+      region: 'Vellore', 
+      lat: 12.9320, 
+      lon: 79.1360, 
+      aliases: ['vellore new bus stand', 'vellore central'] 
+    },
+    { 
+      name: 'Katpadi Junction', 
+      region: 'Vellore', 
+      lat: 12.9780, 
+      lon: 79.1380, 
+      aliases: ['katpadi railway station', 'vit vellore katpadi'] 
+    },
+    { 
+      name: 'CMC Hospital (Vellore)', 
+      region: 'Vellore', 
+      lat: 12.9250, 
+      lon: 79.1340, 
+      aliases: ['cmc vellore', 'vellore fort'] 
+    },
+    { 
+      name: 'Ranipet', 
+      region: 'Ranipet District', 
+      lat: 12.9280, 
+      lon: 79.3330, 
+      aliases: ['ranipet sipcot', 'ranipet bus stand'] 
+    },
+
+    // =========================================================================
+    // 14. TIRUNELVELI & SUBURBS
+    // =========================================================================
+    { 
+      name: 'Tirunelveli Junction', 
+      region: 'Tirunelveli', 
+      lat: 8.7280, 
+      lon: 77.7150, 
+      aliases: ['nellai junction', 'tirunelveli railway station'] 
+    },
+    { 
+      name: 'Palayamkottai', 
+      region: 'Tirunelveli', 
+      lat: 8.7180, 
+      lon: 77.7420, 
+      aliases: ['palayamkottai bus stand', 'oxford of south india'] 
+    },
+    { 
+      name: 'New Bus Stand (Tirunelveli)', 
+      region: 'Tirunelveli', 
+      lat: 8.6980, 
+      lon: 77.7280, 
+      aliases: ['veinthaankulam bus stand', 'tirunelveli new bus stand'] 
+    },
+
+    // =========================================================================
+    // 15. OTHER MAJOR TAMIL NADU HUBS
+    // =========================================================================
+    { name: 'Thanjavur', region: 'Delta Hubs', lat: 10.7870, lon: 79.1378, aliases: ['tanjore', 'brihadeeswarar temple', 'thanjavur new bus stand'] },
+    { name: 'Kumbakonam', region: 'Delta Hubs', lat: 10.9602, lon: 79.3845, aliases: ['kumbakonam bus stand', 'mahamaham tank'] },
+    { name: 'Dindigul', region: 'Central Hubs', lat: 10.3673, lon: 77.9803, aliases: ['dindigul bus stand', 'dindigul lock'] },
+    { name: 'Hosur', region: 'Industrial Hubs', lat: 12.7409, lon: 77.8253, aliases: ['hosur bus stand', 'hosur sipcot', 'bagalur road'] },
+    { name: 'Nagercoil', region: 'South Hubs', lat: 8.1833, lon: 77.4119, aliases: ['vadasery bus stand', 'kanyakumari nagercoil'] },
+    { name: 'Kanyakumari', region: 'South Hubs', lat: 8.0883, lon: 77.5385, aliases: ['cape comorin', 'vivekananda rock'] },
+    { name: 'Cuddalore', region: 'Coastal Hubs', lat: 11.7480, lon: 79.7714, aliases: ['cuddalore port', 'cuddalore bus stand'] },
+    { name: 'Villupuram', region: 'Northern Hubs', lat: 11.9401, lon: 79.4861, aliases: ['villupuram junction', 'villupuram bus stand'] }
   ],
 
   // In-memory cache for dynamic geocoding
@@ -906,7 +1610,7 @@ const RoutingEngine = {
       .replace(/w/g, 'v');
   },
 
-  // Instant Autocomplete Search (powers live dropdown recommendation as the user types)
+  // Instant Autocomplete Search (powers live dropdown recommendations as the user types)
   searchSuggestions(query, limit = 6) {
     if (!query || query.trim().length < 1) return [];
     const q = query.trim().toLowerCase();
@@ -919,35 +1623,22 @@ const RoutingEngine = {
       let score = 0;
       let matchedAlias = null;
 
-      // Exact name match
       if (nameLow === q) {
         score = 100;
-      } 
-      // Exact alias match (e.g. "chemmencherry" -> "Semmancheri")
-      else if (loc.aliases && loc.aliases.includes(q)) {
+      } else if (loc.aliases && loc.aliases.includes(q)) {
         score = 95;
         matchedAlias = q;
-      }
-      // Name starts with query
-      else if (nameLow.startsWith(q)) {
+      } else if (nameLow.startsWith(q)) {
         score = 80;
-      }
-      // Alias starts with query
-      else if (loc.aliases && loc.aliases.some(a => a.startsWith(q))) {
+      } else if (loc.aliases && loc.aliases.some(a => a.startsWith(q))) {
         score = 75;
         matchedAlias = loc.aliases.find(a => a.startsWith(q));
-      }
-      // Name contains query
-      else if (nameLow.includes(q)) {
+      } else if (nameLow.includes(q)) {
         score = 60;
-      }
-      // Alias contains query
-      else if (loc.aliases && loc.aliases.some(a => a.includes(q))) {
+      } else if (loc.aliases && loc.aliases.some(a => a.includes(q))) {
         score = 55;
         matchedAlias = loc.aliases.find(a => a.includes(q));
-      }
-      // Phonetic normalized match
-      else if (cleanName.includes(cleanQ) || (loc.aliases && loc.aliases.some(a => this.normalizeQuery(a).includes(cleanQ)))) {
+      } else if (cleanName.includes(cleanQ) || (loc.aliases && loc.aliases.some(a => this.normalizeQuery(a).includes(cleanQ)))) {
         score = 45;
         if (loc.aliases) {
           matchedAlias = loc.aliases.find(a => this.normalizeQuery(a).includes(cleanQ));
@@ -1008,7 +1699,7 @@ const RoutingEngine = {
     return null;
   },
 
-  // Asynchronous place resolution with persistent OpenStreetMap Nominatim fallback
+  // Asynchronous place resolution with persistent OpenStreetMap Nominatim fallback across ALL Tamil Nadu
   async resolvePlace(name) {
     if (!name) return null;
     const clean = name.trim();
@@ -1018,7 +1709,7 @@ const RoutingEngine = {
     if (local) return local;
 
     // 2. Check local memory / localStorage cache
-    const cacheKey = `geo_${clean.toLowerCase()}`;
+    const cacheKey = `geo_tn_${clean.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
     if (this._geocache[cacheKey]) return this._geocache[cacheKey];
     try {
       const stored = localStorage.getItem(cacheKey);
@@ -1029,27 +1720,34 @@ const RoutingEngine = {
       }
     } catch {}
 
-    // 3. Fallback to OpenStreetMap Nominatim with Tamil Nadu bias
-    try {
-      const q = encodeURIComponent(`${clean}, Chennai, Tamil Nadu, India`);
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${q}&countrycodes=in&limit=1`;
-      const res = await fetch(url, { headers: { 'User-Agent': 'MazhaiAlarm-Sentinel/2.0' } });
-      const data = await res.json();
-      if (data && data.length > 0) {
-        const item = {
-          name: clean,
-          region: 'Tamil Nadu (OSM Geocoded)',
-          lat: parseFloat(data[0].lat),
-          lon: parseFloat(data[0].lon)
-        };
-        this._geocache[cacheKey] = item;
-        try {
-          localStorage.setItem(cacheKey, JSON.stringify(item));
-        } catch {}
-        return item;
+    // 3. Fallback to OpenStreetMap Nominatim with Tamil Nadu bias (NOT restricting to Chennai)
+    const queries = [
+      `${clean}, Tamil Nadu, India`,
+      `${clean}, India`
+    ];
+
+    for (const queryStr of queries) {
+      try {
+        const q = encodeURIComponent(queryStr);
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${q}&countrycodes=in&limit=1`;
+        const res = await fetch(url, { headers: { 'User-Agent': 'MazhaiAlarm-Sentinel/2.0' } });
+        const data = await res.json();
+        if (data && data.length > 0) {
+          const item = {
+            name: clean,
+            region: 'Tamil Nadu (Auto-Geocoded)',
+            lat: parseFloat(data[0].lat),
+            lon: parseFloat(data[0].lon)
+          };
+          this._geocache[cacheKey] = item;
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify(item));
+          } catch {}
+          return item;
+        }
+      } catch (e) {
+        console.warn('Nominatim geocode query failed for:', queryStr, e);
       }
-    } catch (e) {
-      console.warn('Nominatim geocode fallback failed for:', clean, e);
     }
 
     return null;
@@ -1072,6 +1770,61 @@ const RoutingEngine = {
     return { dist: this.haversineDistance(plat, plon, projLat, projLon), t };
   },
 
+  // Fills large route gaps autonomously using OSRM step landmarks or highway checkpoints
+  fillRouteGaps(matchedAreas, sampledCoords, steps, startName, endName, maxGapKm = 5.5) {
+    if (matchedAreas.length < 2) return matchedAreas;
+
+    const result = [];
+    for (let i = 0; i < matchedAreas.length - 1; i++) {
+      result.push(matchedAreas[i]);
+      const cur = matchedAreas[i];
+      const next = matchedAreas[i + 1];
+
+      const dist = this.haversineDistance(cur.lat, cur.lon, next.lat, next.lon);
+      if (dist > maxGapKm && sampledCoords.length > 2) {
+        const startIdx = Math.floor(Math.max(0, cur.progress) * (sampledCoords.length - 1));
+        const endIdx = Math.ceil(Math.min(1, next.progress) * (sampledCoords.length - 1));
+
+        const numPoints = Math.min(6, Math.floor(dist / maxGapKm));
+        for (let p = 1; p <= numPoints; p++) {
+          const frac = p / (numPoints + 1);
+          const idx = Math.min(sampledCoords.length - 1, Math.max(0, Math.round(startIdx + frac * (endIdx - startIdx))));
+          const [lon, lat] = sampledCoords[idx];
+
+          // Check if there is an OSRM road step nearby
+          let label = null;
+          if (steps && steps.length > 0) {
+            const closeStep = steps.find(s => {
+              if (!s.maneuver || !s.maneuver.location) return false;
+              const [slon, slat] = s.maneuver.location;
+              return this.haversineDistance(lat, lon, slat, slon) < 2.5 && 
+                     s.name && 
+                     s.name.length > 3 && 
+                     !result.some(r => r.name.toLowerCase() === s.name.toLowerCase());
+            });
+            if (closeStep) label = closeStep.name;
+          }
+
+          if (!label) {
+            const estKm = Math.round(dist * frac);
+            label = `${cur.name} - ${next.name} (+${estKm}km)`;
+          }
+
+          result.push({
+            name: label,
+            lat,
+            lon,
+            region: 'Route Corridor Waypoint',
+            progress: cur.progress + frac * (next.progress - cur.progress),
+            synthetic: true
+          });
+        }
+      }
+    }
+    result.push(matchedAreas[matchedAreas.length - 1]);
+    return result;
+  },
+
   // Analyzes route with road corridor point-to-segment algorithm & monotonic progress sorting
   async analyzeRouteAreas(startName, endName) {
     const startObj = await this.resolvePlace(startName);
@@ -1082,18 +1835,22 @@ const RoutingEngine = {
     }
 
     let sampledCoords = [];
+    let steps = [];
+
     try {
-      // 5-second timeout controller for OSRM public service
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 6000);
 
-      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startObj.lon},${startObj.lat};${endObj.lon},${endObj.lat}?overview=full&geometries=geojson`;
+      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startObj.lon},${startObj.lat};${endObj.lon},${endObj.lat}?overview=full&geometries=geojson&steps=true`;
       const res = await fetch(osrmUrl, { signal: controller.signal });
       clearTimeout(timeoutId);
 
       const data = await res.json();
       if (data.routes && data.routes.length > 0 && data.routes[0].geometry && data.routes[0].geometry.coordinates) {
         sampledCoords = data.routes[0].geometry.coordinates; // [[lon, lat], ...]
+        if (data.routes[0].legs && data.routes[0].legs[0] && data.routes[0].legs[0].steps) {
+          steps = data.routes[0].legs[0].steps;
+        }
       }
     } catch (err) {
       console.warn('OSRM route fetch timed out or failed, using linear interpolation fallback:', err);
@@ -1101,10 +1858,10 @@ const RoutingEngine = {
 
     // Fallback: If OSRM is unreachable, create an interpolated straight-line corridor between start and end
     if (sampledCoords.length < 2) {
-      const steps = 25;
+      const stepsCount = 25;
       sampledCoords = [];
-      for (let s = 0; s <= steps; s++) {
-        const f = s / steps;
+      for (let s = 0; s <= stepsCount; s++) {
+        const f = s / stepsCount;
         sampledCoords.push([
           startObj.lon + f * (endObj.lon - startObj.lon),
           startObj.lat + f * (endObj.lat - startObj.lat)
@@ -1144,30 +1901,37 @@ const RoutingEngine = {
 
     // Ensure start is at index 0 and destination is at the final index
     if (!matchedAreas.some(c => c.name.toLowerCase() === startObj.name.toLowerCase())) {
-      matchedAreas.unshift({ name: startObj.name, lat: startObj.lat, lon: startObj.lon, progress: -0.01 });
+      matchedAreas.unshift({ name: startObj.name, lat: startObj.lat, lon: startObj.lon, region: startObj.region, progress: -0.01 });
     }
     if (!matchedAreas.some(c => c.name.toLowerCase() === endObj.name.toLowerCase())) {
-      matchedAreas.push({ name: endObj.name, lat: endObj.lat, lon: endObj.lon, progress: 1.01 });
+      matchedAreas.push({ name: endObj.name, lat: endObj.lat, lon: endObj.lon, region: endObj.region, progress: 1.01 });
     }
 
     // Sort strictly in direction of travel (Start -> End)
     matchedAreas.sort((a, b) => a.progress - b.progress);
 
     // Deduplicate
-    const finalAreas = [];
-    const areaNames = [];
+    const deduped = [];
+    const seenNames = new Set();
     matchedAreas.forEach(item => {
-      if (!areaNames.some(n => n.toLowerCase() === item.name.toLowerCase())) {
-        finalAreas.push(item);
-        areaNames.push(item.name);
+      const low = item.name.toLowerCase();
+      if (!seenNames.has(low)) {
+        seenNames.add(low);
+        deduped.push(item);
       }
     });
+
+    // Autonomous Gap Filling: If any segment has a gap > 5.5 km, synthesize intermediate waypoints
+    const filledAreas = this.fillRouteGaps(deduped, sampledCoords, steps, startObj.name, endObj.name, 5.5);
+
+    // Final string names list
+    const areaNames = filledAreas.map(a => a.name);
 
     return {
       start: startObj,
       end: endObj,
       areas: areaNames, // Array of strings (e.g. ['Ennore', 'Wimco Nagar', ...])
-      areaDetails: finalAreas // Array of full objects
+      areaDetails: filledAreas // Array of full objects with lat, lon, region
     };
   },
 
