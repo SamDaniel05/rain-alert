@@ -1,4 +1,4 @@
-// 5-Minute Daily Sentinel & Audio Alarm Engine (Zero Paid APIs)
+// 5-Minute Daily Sentinel & Contiguous Stretch Audio Alarm Engine
 const AlarmEngine = {
   audioCtx: null,
   speechSynth: window.speechSynthesis,
@@ -17,14 +17,60 @@ const AlarmEngine = {
     }
   },
 
-  // Start the background scanner that runs every 5 minutes
+  // Smart Contiguous Stretch Grouping Algorithm
+  // e.g. "from Wimco Nagar till Tollgate, and again from Kasimedu till Royapuram"
+  formatContiguousRainStretches(orderedRouteAreas, rainThreats) {
+    if (!rainThreats || rainThreats.length === 0) return '';
+    const rainyNames = new Set(rainThreats.map(t => t.name.toLowerCase()));
+
+    const stretches = [];
+    let currentStretch = [];
+
+    // Traverse the route in chronological travel order
+    orderedRouteAreas.forEach(area => {
+      const isRainy = rainyNames.has(area.toLowerCase());
+      if (isRainy) {
+        currentStretch.push(area);
+      } else {
+        if (currentStretch.length > 0) {
+          stretches.push([...currentStretch]);
+          currentStretch = [];
+        }
+      }
+    });
+
+    if (currentStretch.length > 0) {
+      stretches.push(currentStretch);
+    }
+
+    // Convert stretches into natural human phrases
+    const stretchPhrases = stretches.map(stretch => {
+      if (stretch.length === 1) {
+        return `at ${stretch[0]}`;
+      } else if (stretch.length === 2) {
+        return `from ${stretch[0]} to ${stretch[1]}`;
+      } else {
+        return `from ${stretch[0]} till ${stretch[stretch.length - 1]}`;
+      }
+    });
+
+    if (stretchPhrases.length === 1) {
+      return `Rain detected ${stretchPhrases[0]}`;
+    } else if (stretchPhrases.length === 2) {
+      return `Rain detected ${stretchPhrases[0]}, and again ${stretchPhrases[1]}`;
+    } else {
+      return `Rain detected ${stretchPhrases.slice(0, -1).join(', ')}, and ${stretchPhrases[stretchPhrases.length - 1]}`;
+    }
+  },
+
+  // Start the background scanner running every 5 minutes
   startBackgroundSentinel(getActiveDayRouteCallback, onScanLogCallback) {
     if (this.sentinelIntervalId) clearInterval(this.sentinelIntervalId);
 
-    // Initial check immediately
+    // Run first scan immediately
     this.checkTodayRouteRain(getActiveDayRouteCallback, onScanLogCallback);
 
-    // Run every 5 minutes (300,000 ms)
+    // Continuous 5-minute interval
     this.sentinelIntervalId = setInterval(() => {
       this.checkTodayRouteRain(getActiveDayRouteCallback, onScanLogCallback);
     }, 5 * 60 * 1000);
@@ -49,7 +95,7 @@ const AlarmEngine = {
         return;
       }
 
-      // Check time window (e.g., 05:00 to 21:00)
+      // Check monitoring time window (e.g. 05:00 - 21:00)
       const now = new Date();
       const currentMinutes = now.getHours() * 60 + now.getMinutes();
       const [startH, startM] = (route.startTime || '05:00').split(':').map(Number);
@@ -60,18 +106,17 @@ const AlarmEngine = {
       if (currentMinutes < windowStart || currentMinutes > windowEnd) {
         if (onScanLogCallback) onScanLogCallback({ 
           active: false, 
-          message: `Outside active monitoring window (${route.startTime} - ${route.endTime}). Next scan at ${route.startTime}.` 
+          message: `Outside monitoring hours (${route.startTime} - ${route.endTime}). Next 5m scan at ${route.startTime}.` 
         });
         return;
       }
 
-      // Area rain inspection
       const areas = route.areas || [];
       if (areas.length === 0) return;
 
       const rainThreats = [];
 
-      // Query weather for each area in today's route
+      // Query weather for every micro-locality on the route
       for (const area of areas) {
         const place = await RoutingEngine.resolvePlace(area);
         if (place) {
@@ -79,7 +124,8 @@ const AlarmEngine = {
           const currentRain = w.current.rain || w.current.precip;
           const currentProb = w.hourly.precipitation_probability ? w.hourly.precipitation_probability[0] : 0;
 
-          if (currentRain > 0.4 || currentProb >= 35 || w.current.isRain) {
+          // Sensitive threshold for micro-local showers
+          if (currentRain > 0.3 || currentProb >= 35 || w.current.isRain) {
             rainThreats.push({
               name: area,
               rainProb: currentProb,
@@ -94,14 +140,16 @@ const AlarmEngine = {
       const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
       if (rainThreats.length > 0) {
-        this.triggerAlarm(route, rainThreats);
+        const formattedSentence = this.formatContiguousRainStretches(areas, rainThreats);
+        this.triggerAlarm(route, rainThreats, formattedSentence);
         if (onScanLogCallback) {
           onScanLogCallback({
             active: true,
             hasRain: true,
             timestamp,
             rainThreats,
-            message: `🚨 Rain detected at: ${rainThreats.map(t => t.name).join(', ')}!`
+            formattedSentence,
+            message: `🚨 ${formattedSentence}!`
           });
         }
       } else {
@@ -111,21 +159,21 @@ const AlarmEngine = {
             hasRain: false,
             timestamp,
             rainThreats: [],
-            message: `All ${areas.length} areas on today's route (${route.startLocation} ➔ ${route.endLocation}) are clear.`
+            message: `All ${areas.length} locations on today's route (${route.startLocation} ➔ ${route.endLocation}) are clear.`
           });
         }
       }
 
     } catch (e) {
-      console.warn('Sentinel scan failed:', e);
+      console.warn('Sentinel scan error:', e);
     }
   },
 
-  triggerAlarm(route, rainThreats) {
+  triggerAlarm(route, rainThreats, customSentence = null) {
     this.isRinging = true;
     this.initAudio();
 
-    // Loop sound every 3.5s until user dismisses
+    // Loop siren audio every 3.5s
     this.playTone();
     if (this.alarmLoopId) clearInterval(this.alarmLoopId);
     this.alarmLoopId = setInterval(() => {
@@ -136,28 +184,27 @@ const AlarmEngine = {
       }
     }, 3500);
 
-    // Haptic vibration for mobile phones
+    // Phone vibration
     if ('vibrate' in navigator) {
       try { navigator.vibrate([700, 300, 700, 300, 1000]); } catch (e) {}
     }
 
-    const threatNames = rainThreats.map(t => t.name).join(', ');
-    const maxProb = Math.max(...rainThreats.map(t => t.rainProb));
+    const sentence = customSentence || this.formatContiguousRainStretches(route.areas || [], rainThreats);
 
-    // Voice announcement via Web Speech
+    // Natural Voice speech announcement
     this.speakAlert(
-      `Rain Alert! Rain detected in ${threatNames} on your ${route.day} route. Please take shelter or wear your raincoat.`
+      `${sentence} on your ${route.day} route. Please take shelter or wear your raincoat.`
     );
 
     // Push notification
     this.sendNotification(
-      `🚨 RAIN ALERT: ${threatNames}`,
-      `Rain forecasted along your ${route.day} route (${maxProb}% chance). Pull over safely or take rain precautions.`
+      `🚨 RAIN ALERT: ${route.day} Route`,
+      `${sentence}. Protect your sales materials and ride carefully.`
     );
 
-    // Dispatch UI event for alarm modal popup
+    // Dispatch UI event for alarm modal
     window.dispatchEvent(new CustomEvent('mazhai-alarm-triggered', {
-      detail: { route, rainThreats }
+      detail: { route, rainThreats, sentence }
     }));
   },
 
@@ -178,7 +225,6 @@ const AlarmEngine = {
     const ctx = this.audioCtx;
     const now = ctx.currentTime;
 
-    // Siren alarm sound
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sawtooth';
@@ -215,7 +261,7 @@ const AlarmEngine = {
         new Notification(title, {
           body,
           icon: 'manifest-icon.png',
-          tag: 'mazhai-alarm-tag',
+          tag: 'mazhai-stretch-alert',
           renotify: true
         });
       } catch (e) {}

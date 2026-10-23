@@ -259,14 +259,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const testRoute = getTodayRoute() || {
-      day: 'Monday',
-      startLocation: 'Adyar',
-      endLocation: 'Kelambakkam'
+      day: 'Friday',
+      startLocation: 'Wimco Nagar',
+      endLocation: 'Royapuram',
+      areas: [
+        'Wimco Nagar', 'Tiruvottiyur', 'Theradi', 'Tiruvottiyur Market', 
+        'Kaladipet', 'Rajakadai', 'Tollgate', 'Tondiarpet', 'Kasimedu', 
+        'Kalmandapam', 'Royapuram'
+      ]
     };
 
+    // Demonstrates exact contiguous stretch alert:
+    // Rain from Wimco Nagar till Tollgate, and again from Kasimedu till Royapuram
     const mockThreats = [
-      { name: 'Sholinganallur', rainProb: 80, rainMm: 3.5 },
-      { name: 'Kelambakkam', rainProb: 70, rainMm: 2.1 }
+      { name: 'Wimco Nagar', rainProb: 85, rainMm: 4.0 },
+      { name: 'Tiruvottiyur', rainProb: 80, rainMm: 3.5 },
+      { name: 'Theradi', rainProb: 85, rainMm: 4.2 },
+      { name: 'Kaladipet', rainProb: 75, rainMm: 3.0 },
+      { name: 'Tollgate', rainProb: 70, rainMm: 2.5 },
+      { name: 'Kasimedu', rainProb: 70, rainMm: 2.8 },
+      { name: 'Kalmandapam', rainProb: 75, rainMm: 3.2 },
+      { name: 'Royapuram', rainProb: 80, rainMm: 3.6 }
     ];
 
     AlarmEngine.triggerAlarm(testRoute, mockThreats);
@@ -275,11 +288,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Active Alarm Ringing Overlay Listeners
   window.addEventListener('mazhai-alarm-triggered', (e) => {
     alarmRingingOverlay.classList.add('active');
-    const { route, rainThreats } = e.detail;
-    const areas = (rainThreats || []).map(t => t.name).join(', ');
+    const { route, rainThreats, sentence } = e.detail;
+    const finalSentence = sentence || AlarmEngine.formatContiguousRainStretches(route.areas || [], rainThreats);
     ringingDesc.innerHTML = `
-      Heavy rain detected in <strong>${areas}</strong> along your <strong>${route.day}</strong> route!<br>
-      Please take shelter or secure your sales materials now.
+      <strong>${finalSentence}</strong> along your <strong>${route.day}</strong> route!<br>
+      Please take shelter, wear your raincoat, and protect your sales materials.
     `;
   });
 
