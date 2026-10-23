@@ -55,14 +55,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const ringingDesc = document.getElementById('ringingDesc');
   const btnDismissAlarm = document.getElementById('btnDismissAlarm');
 
-  // Check Authentication
+  // Check Authentication & Enforce Strict User Data Isolation
   function checkAuth() {
     currentUser = AuthEngine.getCurrentUser();
     if (!currentUser) {
+      userRoutes = [];
+      renderAlarmsList();
+      AlarmEngine.stopBackgroundSentinel();
+      currentUserName.textContent = 'Guest';
+      sentinelDot.className = 'pulse-dot';
+      sentinelTitle.textContent = 'Account Locked / Logged Out';
+      sentinelSub.textContent = 'Please log in to view your personal routes';
       authModal.classList.add('open');
     } else {
       authModal.classList.remove('open');
       currentUserName.textContent = currentUser.name || 'Sales Rep';
+      // Load strictly this user's isolated routes
       userRoutes = AuthEngine.getUserRoutes(currentUser.id);
       renderAlarmsList();
       initTodaySentinel();
@@ -96,6 +104,10 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         currentUser = AuthEngine.login(authEmail.value, authPassword.value);
       }
+      // Clear inputs
+      authName.value = '';
+      authEmail.value = '';
+      authPassword.value = '';
       checkAuth();
     } catch (err) {
       alert(err.message);
@@ -105,6 +117,8 @@ document.addEventListener('DOMContentLoaded', () => {
   btnLogout.addEventListener('click', () => {
     if (confirm('Log out of this account?')) {
       AuthEngine.logout();
+      currentUser = null;
+      userRoutes = [];
       checkAuth();
     }
   });
@@ -281,6 +295,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnOpenAddModal.addEventListener('click', () => {
     tempDetectedAreas = [];
+    startLocationInput.value = '';
+    endLocationInput.value = '';
+    customDetourInput.value = '';
     areaChipsList.innerHTML = `<span class="placeholder-text">Click "Find Fastest Route" above to see all areas automatically.</span>`;
     areaCountText.textContent = '0 areas';
     addAlarmModal.classList.add('open');
