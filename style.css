@@ -534,10 +534,10 @@ input:checked + .slider:before { transform: translateX(22px); }
   display: inline-block;
 }
 
-/* Day Picker */
+/* Day Picker (7 Days: Mon - Sun) */
 .day-picker {
   display: flex;
-  gap: 6px;
+  gap: 4px;
 }
 
 .day-btn {
@@ -547,9 +547,10 @@ input:checked + .slider:before { transform: translateX(22px); }
   color: var(--text-muted);
   padding: 8px 0;
   border-radius: var(--radius-sm);
-  font-size: 0.78rem;
+  font-size: 0.73rem;
   font-weight: 700;
   cursor: pointer;
+  text-align: center;
 }
 
 .day-btn.active {
