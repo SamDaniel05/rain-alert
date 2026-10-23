@@ -79,8 +79,17 @@
 
       <div class="sheet-body">
         
-        <!-- Day Selector -->
+        <!-- Schedule Type: Weekly vs Ring Once -->
         <div class="form-group">
+          <label>Alarm Schedule Type</label>
+          <div class="schedule-type-toggle">
+            <button type="button" class="btn-sched-type active" id="typeWeeklyBtn">🔁 Weekly Routine</button>
+            <button type="button" class="btn-sched-type" id="typeOnceBtn">⚡ Ring Once / Today Only</button>
+          </div>
+        </div>
+
+        <!-- Day Selector (Visible for Weekly Routine) -->
+        <div class="form-group" id="dayPickerGroup">
           <label>Select Day of the Week</label>
           <div class="day-picker" id="dayPicker">
             <button type="button" class="day-btn active" data-day="Monday">Mon</button>
@@ -90,6 +99,11 @@
             <button type="button" class="day-btn" data-day="Friday">Fri</button>
             <button type="button" class="day-btn" data-day="Saturday">Sat</button>
           </div>
+        </div>
+
+        <!-- One-Time Helper Banner (Visible for Ring Once) -->
+        <div class="once-info-banner" id="onceInfoBanner" style="display: none;">
+          ⚡ <strong>Ring Once / Today Only:</strong> Use this for special or non-routine trips. Toggle it ON whenever you start this journey, and MazhaiAlarm will monitor all areas for rain every 5 minutes.
         </div>
 
         <!-- Monitoring Window -->

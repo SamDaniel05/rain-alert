@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let userRoutes = currentUser ? AuthEngine.getUserRoutes(currentUser.id) : [];
   let tempDetectedAreas = [];
   let selectedDay = 'Monday';
+  let selectedScheduleType = 'weekly'; // 'weekly' or 'once'
 
   // DOM Elements
   const currentUserName = document.getElementById('currentUserName');
@@ -27,6 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCloseModal = document.getElementById('btnCloseModal');
   const btnCancelModal = document.getElementById('btnCancelModal');
   const btnSaveAlarm = document.getElementById('btnSaveAlarm');
+  const typeWeeklyBtn = document.getElementById('typeWeeklyBtn');
+  const typeOnceBtn = document.getElementById('typeOnceBtn');
+  const dayPickerGroup = document.getElementById('dayPickerGroup');
+  const onceInfoBanner = document.getElementById('onceInfoBanner');
   const dayPicker = document.getElementById('dayPicker');
   const startTimeInput = document.getElementById('startTimeInput');
   const endTimeInput = document.getElementById('endTimeInput');
@@ -144,6 +149,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const card = document.createElement('div');
       card.className = `alarm-card ${route.enabled ? '' : 'disabled'}`;
       
+      const isOnce = route.type === 'once';
+      const dayBadgeClass = isOnce ? 'alarm-day-badge once' : 'alarm-day-badge';
+      const dayBadgeText = isOnce ? '⚡ RING ONCE (ON-DEMAND)' : route.day;
+      const timeWindowText = isOnce 
+        ? `Hours: <strong>${route.startTime} – ${route.endTime}</strong> &bull; Active when toggled ON`
+        : `Active: <strong>${route.startTime} – ${route.endTime}</strong> &bull; Scans every 5 mins`;
+
       const areasListHtml = (route.areas || []).map(a => `
         <span class="mini-area-chip">${a}</span>
       `).join('');
@@ -151,14 +163,14 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `
         <div class="alarm-card-top">
           <div>
-            <div class="alarm-day-badge">${route.day}</div>
+            <div class="${dayBadgeClass}">${dayBadgeText}</div>
             <div class="alarm-route-title">
               <span>${route.startLocation}</span>
               <span style="color: var(--accent-cyan); font-size: 0.9rem;">➔</span>
               <span>${route.endLocation}</span>
             </div>
             <div class="alarm-time-window">
-              Active: <strong>${route.startTime} – ${route.endTime}</strong> &bull; Scans every 5 mins
+              ${timeWindowText}
             </div>
           </div>
           <label class="switch" title="Toggle route alarm on/off">
@@ -215,9 +227,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Today's Sentinel Runner
   function getTodayRoute() {
+    // 1. Any Ring Once / On-Demand alarm that is currently toggled ON takes immediate active priority!
+    const activeOnce = userRoutes.find(r => r.type === 'once' && r.enabled);
+    if (activeOnce) return activeOnce;
+
+    // 2. Otherwise match today's scheduled weekday
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const currentDay = days[new Date().getDay()];
-    return userRoutes.find(r => r.day.toLowerCase() === currentDay.toLowerCase() && r.enabled) || null;
+    return userRoutes.find(r => r.type !== 'once' && r.day.toLowerCase() === currentDay.toLowerCase() && r.enabled) || null;
   }
 
   function initTodaySentinel() {
@@ -227,7 +244,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (todayRoute) {
       sentinelDot.className = 'pulse-dot active';
-      sentinelTitle.textContent = `Today's Sentinel: ${todayRoute.day} (${todayRoute.startTime} - ${todayRoute.endTime})`;
+      const label = todayRoute.type === 'once' 
+        ? `⚡ Ring Once Active (${todayRoute.startTime} - ${todayRoute.endTime})` 
+        : `Today's Sentinel: ${todayRoute.day} (${todayRoute.startTime} - ${todayRoute.endTime})`;
+
+      sentinelTitle.textContent = label;
       sentinelSub.textContent = `${todayRoute.startLocation} ➔ ${todayRoute.endLocation} (${todayRoute.areas.length} areas on 5m scan)`;
 
       // Start 5-min engine
@@ -246,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       sentinelDot.className = 'pulse-dot';
       sentinelTitle.textContent = `No Active Alarm for ${currentDay}`;
-      sentinelSub.textContent = `Tap '+' to schedule a route for ${currentDay}`;
+      sentinelSub.textContent = `Tap '+' to schedule a route or turn on a Ring Once alarm`;
       AlarmEngine.stopBackgroundSentinel();
     }
   }
@@ -306,6 +327,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ================= ADD ALARM MODAL FLOW =================
 
+  // Schedule Type Buttons (Weekly Routine vs Ring Once)
+  typeWeeklyBtn.addEventListener('click', () => {
+    selectedScheduleType = 'weekly';
+    typeWeeklyBtn.classList.add('active');
+    typeOnceBtn.classList.remove('active');
+    dayPickerGroup.style.display = 'flex';
+    onceInfoBanner.style.display = 'none';
+  });
+
+  typeOnceBtn.addEventListener('click', () => {
+    selectedScheduleType = 'once';
+    typeOnceBtn.classList.add('active');
+    typeWeeklyBtn.classList.remove('active');
+    dayPickerGroup.style.display = 'none';
+    onceInfoBanner.style.display = 'block';
+  });
+
   btnOpenAddModal.addEventListener('click', () => {
     tempDetectedAreas = [];
     startLocationInput.value = '';
@@ -313,6 +351,8 @@ document.addEventListener('DOMContentLoaded', () => {
     customDetourInput.value = '';
     areaChipsList.innerHTML = `<span class="placeholder-text">Click "Find Fastest Route" above to see all areas automatically.</span>`;
     areaCountText.textContent = '0 areas';
+    // Default to weekly
+    typeWeeklyBtn.click();
     addAlarmModal.classList.add('open');
   });
 
@@ -407,13 +447,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (tempDetectedAreas.length === 0) {
-      // Auto-fallback to start & end if not analyzed
       tempDetectedAreas = [start, end];
     }
 
+    const isOnce = selectedScheduleType === 'once';
+
     const newRoute = {
       id: 'route_' + Date.now(),
-      day: selectedDay,
+      type: selectedScheduleType, // 'weekly' or 'once'
+      day: isOnce ? 'Today / On-Demand' : selectedDay,
       enabled: true,
       startTime: startTimeInput.value || '05:00',
       endTime: endTimeInput.value || '21:00',
@@ -422,9 +464,11 @@ document.addEventListener('DOMContentLoaded', () => {
       areas: [...tempDetectedAreas]
     };
 
-    // Remove existing alarm for that day if user is replacing it
-    userRoutes = userRoutes.filter(r => r.day.toLowerCase() !== selectedDay.toLowerCase());
-    userRoutes.push(newRoute);
+    // If weekly, replace same day; if once, prepend
+    if (!isOnce) {
+      userRoutes = userRoutes.filter(r => !(r.type !== 'once' && r.day.toLowerCase() === selectedDay.toLowerCase()));
+    }
+    userRoutes.unshift(newRoute);
 
     AuthEngine.saveUserRoutes(currentUser.id, userRoutes);
     renderAlarmsList();

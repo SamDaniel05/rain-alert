@@ -487,6 +487,53 @@ input:checked + .slider:before { transform: translateX(22px); }
   text-transform: uppercase;
 }
 
+/* Schedule Type Toggle */
+.schedule-type-toggle {
+  display: flex;
+  background: #1e293b;
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  gap: 4px;
+}
+
+.btn-sched-type {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-sched-type.active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 8px var(--primary-glow);
+}
+
+.once-info-banner {
+  background: rgba(251, 146, 60, 0.12);
+  border: 1px solid rgba(251, 146, 60, 0.35);
+  color: #fdba74;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.alarm-day-badge.once {
+  color: #fb923c;
+  background: rgba(251, 146, 60, 0.15);
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid rgba(251, 146, 60, 0.3);
+  display: inline-block;
+}
+
 /* Day Picker */
 .day-picker {
   display: flex;
