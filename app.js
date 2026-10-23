@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnQuickTest = document.getElementById('btnQuickTest');
 
   // 3-Way Theme Management (System Default | Light Mode | Dark Mode)
+  // Featuring District / Ben 10 Upgrade / Symbiote radial ripple transition
   const THEME_STORAGE_KEY = 'mazhai_theme_preference';
   const themeButtons = document.querySelectorAll('#themeSelector .theme-btn');
 
@@ -31,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return preference; // 'light' or 'dark'
   }
 
-  function applyTheme(preference) {
+  function applyThemeDOM(preference) {
     const effective = getEffectiveTheme(preference);
     if (effective === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
@@ -55,16 +56,81 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  async function switchThemeWithRadialTransition(preference, originEvent, clickedBtn) {
+    const currentEffective = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    const targetEffective = getEffectiveTheme(preference);
+
+    // If effective theme isn't changing, just update button state
+    if (currentEffective === targetEffective) {
+      applyThemeDOM(preference);
+      return;
+    }
+
+    // Fallback if browser doesn't support View Transitions or prefers reduced motion
+    if (!document.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      applyThemeDOM(preference);
+      return;
+    }
+
+    // Calculate origin coordinates (where click happened or center of the clicked button)
+    let x = originEvent ? originEvent.clientX : null;
+    let y = originEvent ? originEvent.clientY : null;
+
+    if (typeof x !== 'number' || typeof y !== 'number' || (x === 0 && y === 0)) {
+      const btn = clickedBtn || document.querySelector(`#themeSelector .theme-btn[data-theme-val="${preference}"]`);
+      if (btn) {
+        const rect = btn.getBoundingClientRect();
+        x = rect.left + rect.width / 2;
+        y = rect.top + rect.height / 2;
+      } else {
+        x = window.innerWidth / 2;
+        y = 0;
+      }
+    }
+
+    // Calculate maximum radius to fully engulf the viewport from (x, y)
+    const maxRadius = Math.ceil(Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    )) + 12;
+
+    const transition = document.startViewTransition(() => {
+      applyThemeDOM(preference);
+    });
+
+    try {
+      await transition.ready;
+
+      // Animate the incoming theme radiating outward from the origin point
+      // like Ben 10's Upgrade or a symbiote engulfing the entire interface
+      document.documentElement.animate(
+        {
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${maxRadius}px at ${x}px ${y}px)`
+          ]
+        },
+        {
+          duration: 520,
+          easing: 'cubic-bezier(0.22, 1, 0.36, 1)', // Smooth organic expansion
+          pseudoElement: '::view-transition-new(root)'
+        }
+      );
+    } catch (err) {
+      // Transition cancelled or aborted
+    }
+  }
+
   function initTheme() {
     // Default to 'light' mode as preferred by user, but persist if they chose 'system' or 'dark'
     const saved = localStorage.getItem(THEME_STORAGE_KEY) || 'light';
-    applyTheme(saved);
+    applyThemeDOM(saved);
 
     themeButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
         const pref = btn.getAttribute('data-theme-val');
         localStorage.setItem(THEME_STORAGE_KEY, pref);
-        applyTheme(pref);
+        switchThemeWithRadialTransition(pref, e, btn);
       });
     });
 
@@ -72,7 +138,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
       const currentPref = localStorage.getItem(THEME_STORAGE_KEY) || 'light';
       if (currentPref === 'system') {
-        applyTheme('system');
+        const activeBtn = document.querySelector('#themeSelector .theme-btn[data-theme-val="system"]');
+        switchThemeWithRadialTransition('system', null, activeBtn);
       }
     });
   }

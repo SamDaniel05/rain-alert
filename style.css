@@ -95,7 +95,23 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* ==========================================================================
+   Symbiote / Upgrade Radial Ripple Theme Transition (District App Style)
+   ========================================================================== */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
 }
 
 /* App Shell (Mobile First) */
