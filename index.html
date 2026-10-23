@@ -7,7 +7,7 @@
   
   <!-- PWA & Mobile Web Meta -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#090d16">
+  <meta name="theme-color" content="#f8f9fc">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="Alarm app that monitors your 6-day weekly field sales routes for rain every 5 minutes.">
@@ -23,15 +23,24 @@
     <!-- Top App Bar -->
     <header class="app-bar">
       <div class="brand">
-        <span class="brand-icon">⏰</span>
+        <div class="brand-icon-badge">🌧️</div>
         <div class="brand-text">
-          <h1>MazhaiAlarm</h1>
-          <span class="sub-text">Field Route Rain Guardian</span>
+          <h1>Mazhai<span>Alarm</span></h1>
+          <span class="sub-text">Field Sales Rain Guardian</span>
         </div>
       </div>
-      <div class="user-pill" id="userPill">
-        <span class="user-name" id="currentUserName">Sales Rep</span>
-        <button class="btn-logout" id="btnLogout" title="Logout or Switch Account">🚪</button>
+      <div class="header-right">
+        <!-- 3-Way Theme Switcher (System / Light / Dark) -->
+        <div class="theme-selector-pill" id="themeSelector" title="Theme Selector">
+          <button type="button" class="theme-btn" data-theme-val="system" title="Follow device theme">Auto</button>
+          <button type="button" class="theme-btn active" data-theme-val="light" title="Light mode">☀️</button>
+          <button type="button" class="theme-btn" data-theme-val="dark" title="Dark mode">🌙</button>
+        </div>
+        <!-- User Badge & Logout -->
+        <button class="user-badge-btn" id="btnLogout" title="Click to Switch User / Logout">
+          <span class="user-avatar-circle" id="userAvatarLetter">S</span>
+          <span class="user-name" id="currentUserName">Sales Rep</span>
+        </button>
       </div>
     </header>
 
@@ -64,7 +73,8 @@
 
     <!-- Floating Action Button (FAB '+') in Bottom Right -->
     <button class="fab-add-alarm" id="btnOpenAddModal" title="Set up new route alarm">
-      <span>+</span>
+      <span class="fab-icon">+</span>
+      <span>Add Route Alarm</span>
     </button>
 
   </div>

@@ -12,12 +12,72 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // DOM Elements
   const currentUserName = document.getElementById('currentUserName');
+  const userAvatarLetter = document.getElementById('userAvatarLetter');
   const btnLogout = document.getElementById('btnLogout');
   const sentinelBanner = document.getElementById('sentinelBanner');
   const sentinelDot = document.getElementById('sentinelDot');
   const sentinelTitle = document.getElementById('sentinelTitle');
   const sentinelSub = document.getElementById('sentinelSub');
   const btnQuickTest = document.getElementById('btnQuickTest');
+
+  // 3-Way Theme Management (System Default | Light Mode | Dark Mode)
+  const THEME_STORAGE_KEY = 'mazhai_theme_preference';
+  const themeButtons = document.querySelectorAll('#themeSelector .theme-btn');
+
+  function getEffectiveTheme(preference) {
+    if (preference === 'system') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return preference; // 'light' or 'dark'
+  }
+
+  function applyTheme(preference) {
+    const effective = getEffectiveTheme(preference);
+    if (effective === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+
+    // Sync button active classes
+    themeButtons.forEach(btn => {
+      if (btn.getAttribute('data-theme-val') === preference) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    // Update browser status bar / theme-color meta
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) {
+      metaTheme.setAttribute('content', effective === 'dark' ? '#0b0f19' : '#f8f9fc');
+    }
+  }
+
+  function initTheme() {
+    // Default to 'light' mode as preferred by user, but persist if they chose 'system' or 'dark'
+    const saved = localStorage.getItem(THEME_STORAGE_KEY) || 'light';
+    applyTheme(saved);
+
+    themeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const pref = btn.getAttribute('data-theme-val');
+        localStorage.setItem(THEME_STORAGE_KEY, pref);
+        applyTheme(pref);
+      });
+    });
+
+    // System theme live change listener
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      const currentPref = localStorage.getItem(THEME_STORAGE_KEY) || 'light';
+      if (currentPref === 'system') {
+        applyTheme('system');
+      }
+    });
+  }
+
+  initTheme();
 
   const alarmsList = document.getElementById('alarmsList');
   const alarmCountBadge = document.getElementById('alarmCountBadge');
@@ -68,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderAlarmsList();
       AlarmEngine.stopBackgroundSentinel();
       currentUserName.textContent = 'Guest';
+      if (userAvatarLetter) userAvatarLetter.textContent = 'G';
       sentinelDot.className = 'pulse-dot';
       sentinelTitle.textContent = 'Account Locked / Logged Out';
       sentinelSub.textContent = 'Please log in to view your personal routes';
@@ -75,6 +136,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       authModal.classList.remove('open');
       currentUserName.textContent = currentUser.name || 'Sales Rep';
+      if (userAvatarLetter) {
+        userAvatarLetter.textContent = (currentUser.name || 'S').trim().charAt(0).toUpperCase();
+      }
       // Load strictly this user's isolated routes
       userRoutes = AuthEngine.getUserRoutes(currentUser.id);
       renderAlarmsList();
@@ -166,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="${dayBadgeClass}">${dayBadgeText}</div>
             <div class="alarm-route-title">
               <span>${route.startLocation}</span>
-              <span style="color: var(--accent-cyan); font-size: 0.9rem;">➔</span>
+              <span class="arrow">➔</span>
               <span>${route.endLocation}</span>
             </div>
             <div class="alarm-time-window">
@@ -182,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="alarm-areas-box">
           <div class="areas-label">
             <span>Areas Covered (${(route.areas || []).length})</span>
-            <span style="color: var(--accent-cyan);">Monitored for rain</span>
+            <span style="color: var(--brand-primary); font-weight: 700;">Monitored 5m</span>
           </div>
           <div class="areas-chips-row">
             ${areasListHtml}
